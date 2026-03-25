@@ -5,565 +5,219 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>周易占事 · 梅花易数</title>
 <style>
-  :root {
-    --bg: #0a0a12;
-    --card: #12121e;
-    --gold: #c9a84c;
-    --gold-light: #e8c96a;
-    --gold-dark: #8a6e2e;
-    --text: #e8e0d0;
-    --text-dim: #8a8070;
-    --red: #c94c4c;
-    --green: #4c8a5c;
-    --border: rgba(201,168,76,0.2);
-    --shadow: rgba(0,0,0,0.5);
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body {
-    width: 100%; min-height: 100vh;
-    background: var(--bg);
-    color: var(--text);
-    font-family: "PingFang SC", "Microsoft YaHei", "Noto Serif SC", serif;
-    overflow-x: hidden;
-  }
-
-  /* 背景装饰 */
-  body::before {
-    content: '';
-    position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background:
-      radial-gradient(ellipse 60% 50% at 20% 10%, rgba(201,168,76,0.06) 0%, transparent 70%),
-      radial-gradient(ellipse 50% 60% at 80% 90%, rgba(100,60,160,0.04) 0%, transparent 70%);
-  }
-
-  .container {
-    position: relative; z-index: 1;
-    max-width: 600px; margin: 0 auto;
-    padding: 20px 16px 60px;
-  }
-
-  /* 头部 */
-  header {
-    text-align: center;
-    padding: 30px 0 24px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 32px;
-  }
-  header .title {
-    font-size: 28px;
-    color: var(--gold);
-    letter-spacing: 0.15em;
-    text-shadow: 0 0 20px rgba(201,168,76,0.4);
-    margin-bottom: 6px;
-  }
-  header .subtitle {
-    font-size: 13px;
-    color: var(--text-dim);
-    letter-spacing: 0.2em;
-  }
-  header .bagua {
-    font-size: 36px;
-    margin-top: 12px;
-    opacity: 0.6;
-    letter-spacing: 0.3em;
-  }
-
-  /* 步骤条 */
-  .steps-bar {
-    display: flex; justify-content: center; align-items: center;
-    gap: 0; margin-bottom: 28px;
-  }
-  .step-dot {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: var(--card); border: 1.5px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; color: var(--text-dim);
-    transition: all 0.4s ease;
-  }
-  .step-dot.active {
-    background: var(--gold); border-color: var(--gold);
-    color: #000; font-weight: bold;
-    box-shadow: 0 0 10px rgba(201,168,76,0.5);
-  }
-  .step-dot.done {
-    background: rgba(201,168,76,0.2); border-color: var(--gold);
-    color: var(--gold);
-  }
-  .step-line {
-    width: 36px; height: 1.5px;
-    background: var(--border);
-    transition: background 0.4s;
-  }
-  .step-line.done { background: var(--gold); }
-
-  /* 页面卡片 */
-  .page { display: none; }
-  .page.active { display: block; animation: fadeIn 0.4s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 4px 24px var(--shadow);
-  }
-
-  /* 标题样式 */
-  .section-title {
-    font-size: 18px; color: var(--gold);
-    text-align: center; margin-bottom: 16px;
-    letter-spacing: 0.1em;
-    position: relative;
-  }
-  .section-title::before,
-  .section-title::after {
-    content: '◆'; font-size: 8px;
-    vertical-align: middle; margin: 0 8px;
-    opacity: 0.5;
-  }
-
-  .instruction {
-    text-align: center;
-    color: var(--text-dim);
-    font-size: 14px;
-    line-height: 1.8;
-    margin-bottom: 24px;
-  }
-
-  /* 卦符展示 */
-  .hexagram-display {
-    display: flex; justify-content: center; align-items: center;
-    gap: 16px; margin: 20px 0;
-    padding: 20px;
-    background: rgba(201,168,76,0.04);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-  }
-  .hexagram-stack {
-    text-align: center;
-  }
-  .hexagram-name {
-    font-size: 22px; color: var(--gold);
-    margin-bottom: 6px; font-weight: bold;
-    letter-spacing: 0.1em;
-  }
-  .hexagram-id {
-    font-size: 11px; color: var(--text-dim);
-    margin-bottom: 8px;
-  }
-  .hexagram-symbols {
-    display: flex; flex-direction: column; gap: 1px;
-  }
-  .yao-line {
-    width: 56px; height: 7px; border-radius: 2px;
-    transition: background 0.3s;
-  }
-  .yao-yang {
-    background: var(--gold);
-    box-shadow: 0 0 4px rgba(201,168,76,0.4);
-  }
-  .yao-yin {
-    background: transparent;
-    border: 2px solid var(--gold-dark);
-    box-shadow: inset 0 0 4px rgba(0,0,0,0.3);
-  }
-  .yao-line.dong { box-shadow: 0 0 8px var(--gold-light), 0 0 16px rgba(232,201,106,0.4); }
-  .arrow-symbol {
-    font-size: 28px; color: var(--gold);
-    opacity: 0.5;
-  }
-  .hexagram-meta {
-    font-size: 12px; color: var(--text-dim);
-    margin-top: 8px;
-  }
-
-  /* 爻图 */
-  .yao-table {
-    width: 100%; border-collapse: collapse;
-    margin: 12px 0;
-  }
-  .yao-table td {
-    padding: 6px 10px; font-size: 13px;
-    text-align: center;
-  }
-  .yao-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
-  .yao-pos { color: var(--text-dim); width: 36%; }
-  .yao-type { color: var(--gold); font-size: 12px; }
-  .yao-dong { color: var(--red); font-size: 11px; }
-
-  /* 数字输入 */
-  .number-input-area {
-    display: flex; flex-direction: column; align-items: center;
-    gap: 16px; margin: 20px 0;
-  }
-  .number-input {
-    width: 160px; height: 64px;
-    font-size: 28px; text-align: center;
-    background: rgba(201,168,76,0.06);
-    border: 1.5px solid var(--gold-dark);
-    border-radius: 12px;
-    color: var(--gold);
-    outline: none;
-    transition: border-color 0.3s, box-shadow 0.3s;
-    letter-spacing: 0.2em;
-  }
-  .number-input:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 12px rgba(201,168,76,0.2);
-  }
-  .number-input::placeholder { color: rgba(201,168,76,0.3); font-size: 14px; }
-  .hint-text {
-    font-size: 12px; color: var(--text-dim);
-    text-align: center; line-height: 1.6;
-    max-width: 280px;
-  }
-
-  /* 按钮 */
-  .btn {
-    display: block; width: 100%; max-width: 280px;
-    margin: 16px auto 0;
-    padding: 14px 24px;
-    font-size: 16px; font-family: inherit;
-    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
-    color: #0a0a12; font-weight: bold;
-    border: none; border-radius: 10px;
-    cursor: pointer;
-    letter-spacing: 0.15em;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 12px rgba(201,168,76,0.3);
-  }
-  .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 20px rgba(201,168,76,0.5);
-  }
-  .btn:active { transform: translateY(0); }
-  .btn:disabled {
-    opacity: 0.5; cursor: not-allowed; transform: none;
-  }
-  .btn-outline {
-    background: transparent;
-    border: 1.5px solid var(--gold-dark);
-    color: var(--gold);
-    box-shadow: none;
-    margin-top: 10px;
-  }
-  .btn-outline:hover {
-    background: rgba(201,168,76,0.08);
-    box-shadow: none;
-  }
-
-  /* 结果分析区块 */
-  .result-section {
-    margin-bottom: 20px;
-  }
-  .result-label {
-    font-size: 12px; color: var(--text-dim);
-    letter-spacing: 0.15em; margin-bottom: 6px;
-    text-transform: uppercase;
-  }
-  .result-value {
-    font-size: 15px; color: var(--text);
-    line-height: 1.8;
-  }
-  .result-value.gold { color: var(--gold); font-size: 18px; }
-  .result-value.red { color: var(--red); }
-  .result-value.green { color: var(--green); }
-  .result-divider {
-    border: none; border-top: 1px solid var(--border);
-    margin: 16px 0;
-  }
-
-  /* 吉凶标签 */
-  .ausp-badge {
-    display: inline-block; padding: 4px 14px;
-    border-radius: 20px; font-size: 13px;
-    font-weight: bold; letter-spacing: 0.1em;
-    margin-bottom: 12px;
-  }
-  .ausp-great { background: rgba(201,168,76,0.2); color: var(--gold); border: 1px solid var(--gold); }
-  .ausp-good { background: rgba(76,138,92,0.15); color: var(--green); border: 1px solid var(--green); }
-  .ausp-neutral { background: rgba(180,160,120,0.12); color: #b4a078; border: 1px solid #b4a078; }
-  .ausp-bad { background: rgba(201,76,76,0.12); color: var(--red); border: 1px solid var(--red); }
-
-  /* 概率条 */
-  .prob-bar-wrap {
-    margin: 10px 0 14px;
-  }
-  .prob-bar-bg {
-    width: 100%; height: 8px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 4px; overflow: hidden;
-    margin-bottom: 6px;
-  }
-  .prob-bar-fill {
-    height: 100%; border-radius: 4px;
-    transition: width 1s ease;
-  }
-  .prob-bar-fill.great { background: linear-gradient(90deg, var(--gold-dark), var(--gold)); }
-  .prob-bar-fill.good { background: linear-gradient(90deg, #2a6b3a, var(--green)); }
-  .prob-bar-fill.neutral { background: linear-gradient(90deg, #7a6a4a, #b4a078); }
-  .prob-bar-fill.bad { background: linear-gradient(90deg, #8a3a3a, var(--red)); }
-  .prob-labels {
-    display: flex; justify-content: space-between;
-    font-size: 11px; color: var(--text-dim);
-  }
-
-  /* 列表项 */
-  .list-item {
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 14px; line-height: 1.7;
-  }
-  .list-item:last-child { border-bottom: none; }
-  .list-icon { margin-right: 6px; }
-
-  /* 行动建议 */
-  .advice-item {
-    background: rgba(201,168,76,0.04);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-    font-size: 14px; line-height: 1.7;
-  }
-  .advice-num {
-    display: inline-block; width: 20px; height: 20px;
-    background: var(--gold); color: #000;
-    border-radius: 50%; font-size: 11px;
-    text-align: center; line-height: 20px;
-    font-weight: bold; margin-right: 8px;
-    vertical-align: middle;
-  }
-
-  /* 卦辞 */
-  .guaci-block {
-    background: rgba(201,168,76,0.04);
-    border-left: 3px solid var(--gold);
-    padding: 14px 16px;
-    border-radius: 0 10px 10px 0;
-    margin: 10px 0;
-  }
-  .guaci-original {
-    color: var(--gold); font-size: 15px;
-    margin-bottom: 8px;
-    font-style: italic;
-  }
-  .guaci-modern {
-    font-size: 13px; color: var(--text-dim);
-    line-height: 1.8;
-  }
-
-  /* 总结 */
-  .summary-box {
-    background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.03));
-    border: 1px solid rgba(201,168,76,0.3);
-    border-radius: 14px;
-    padding: 20px;
-    text-align: center;
-    margin: 16px 0;
-  }
-  .summary-box .big-text {
-    font-size: 16px; color: var(--text);
-    line-height: 1.9;
-  }
-
-  /* 底部免责声明 */
-  .disclaimer {
-    text-align: center;
-    font-size: 11px; color: rgba(138,128,112,0.5);
-    margin-top: 30px;
-    line-height: 1.6;
-    padding: 0 10px;
-  }
-
-  /* 底部导航 */
-  .bottom-nav {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    z-index: 100;
-    background: rgba(10,10,18,0.95);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid var(--border);
-    padding: 10px 16px;
-    padding-bottom: max(10px, env(safe-area-inset-bottom));
-    display: flex; justify-content: center; gap: 12px;
-  }
-  .nav-btn {
-    padding: 8px 20px; font-size: 13px;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    background: transparent; color: var(--text-dim);
-    cursor: pointer; font-family: inherit;
-    transition: all 0.3s;
-    letter-spacing: 0.1em;
-  }
-  .nav-btn:hover { border-color: var(--gold); color: var(--gold); }
-  .nav-btn.primary {
-    background: rgba(201,168,76,0.1);
-    border-color: var(--gold-dark);
-    color: var(--gold);
-  }
-  .nav-btn.primary:hover { background: rgba(201,168,76,0.2); }
-
-  /* 八卦符号 */
-  .bagua-sym { font-size: 20px; margin-right: 4px; }
-
-  /* 历史记录 */
-  .history-item {
-    background: rgba(255,255,255,0.02);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 14px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: border-color 0.3s;
-  }
-  .history-item:hover { border-color: var(--gold-dark); }
-  .history-title { font-size: 14px; color: var(--text); margin-bottom: 4px; }
-  .history-meta { font-size: 11px; color: var(--text-dim); }
-  .history-hexas { font-size: 12px; color: var(--gold); margin-top: 4px; }
-
-  /* 动画 */
-  @keyframes shimmer {
-    0% { background-position: -200% center; }
-    100% { background-position: 200% center; }
-  }
-  .shimmer { background: linear-gradient(90deg, transparent, rgba(201,168,76,0.1), transparent); background-size: 200% 100%; animation: shimmer 2s infinite; }
-
-  @keyframes pulse-gold {
-    0%, 100% { box-shadow: 0 0 10px rgba(201,168,76,0.3); }
-    50% { box-shadow: 0 0 24px rgba(201,168,76,0.6); }
-  }
-  .pulse { animation: pulse-gold 2s infinite; }
-
-  /* 加载动画 */
-  .loading-dots { text-align: center; padding: 20px; }
-  .loading-dots span {
-    display: inline-block; width: 8px; height: 8px;
-    background: var(--gold); border-radius: 50%;
-    margin: 0 4px;
-    animation: bounce 1.4s infinite ease-in-out both;
-  }
-  .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
-  .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
-  @keyframes bounce { 0%,80%,100% { transform: scale(0); } 40% { transform: scale(1); } }
-
-  /* 滚动条 */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 2px; }
-
-  /* 移动端安全区 */
-  @supports (padding-bottom: env(safe-area-inset-bottom)) {
-    body { padding-bottom: env(safe-area-inset-bottom); }
-  }
+:root{--bg:#0a0a12;--card:#12121e;--gold:#c9a84c;--gold-light:#e8c96a;--gold-dark:#8a6e2e;--text:#e8e0d0;--text-dim:#8a8070;--red:#c94c4c;--green:#4c8a5c;--border:rgba(201,168,76,0.2);--shadow:rgba(0,0,0,0.5)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);font-family:"PingFang SC","Microsoft YaHei","Noto Serif SC",serif;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 60% 50% at 20% 10%,rgba(201,168,76,0.06) 0%,transparent 70%),radial-gradient(ellipse 50% 60% at 80% 90%,rgba(100,60,160,0.04) 0%,transparent 70%)}
+.container{position:relative;z-index:1;max-width:600px;margin:0 auto;padding:20px 16px 80px}
+header{text-align:center;padding:30px 0 24px;border-bottom:1px solid var(--border);margin-bottom:32px}
+header .title{font-size:28px;color:var(--gold);letter-spacing:0.15em;text-shadow:0 0 20px rgba(201,168,76,0.4);margin-bottom:6px}
+header .subtitle{font-size:13px;color:var(--text-dim);letter-spacing:0.2em}
+header .bagua{font-size:36px;margin-top:12px;opacity:0.6;letter-spacing:0.3em}
+.steps-bar{display:flex;justify-content:center;align-items:center;gap:0;margin-bottom:28px}
+.step-dot{width:28px;height:28px;border-radius:50%;background:var(--card);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text-dim);transition:all .4s}
+.step-dot.active{background:var(--gold);border-color:var(--gold);color:#000;font-weight:bold;box-shadow:0 0 10px rgba(201,168,76,0.5)}
+.step-dot.done{background:rgba(201,168,76,0.2);border-color:var(--gold);color:var(--gold)}
+.step-line{width:36px;height:1.5px;background:var(--border);transition:background .4s}
+.step-line.done{background:var(--gold)}
+.page{display:none}
+.page.active{display:block;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px 18px;margin-bottom:14px;box-shadow:0 4px 24px var(--shadow)}
+.section-title{font-size:17px;color:var(--gold);text-align:center;margin-bottom:14px;letter-spacing:0.12em;position:relative}
+.section-title::before,.section-title::after{content:'◆';font-size:8px;vertical-align:middle;margin:0 8px;opacity:0.5}
+.instruction{text-align:center;color:var(--text-dim);font-size:14px;line-height:1.8;margin-bottom:24px}
+.hexagram-display{display:flex;justify-content:center;align-items:center;gap:14px;margin:16px 0;padding:18px;background:rgba(201,168,76,0.04);border:1px solid var(--border);border-radius:12px}
+.hexagram-stack{text-align:center}
+.hexagram-name{font-size:22px;color:var(--gold);margin-bottom:4px;font-weight:bold;letter-spacing:0.1em}
+.hexagram-id{font-size:11px;color:var(--text-dim);margin-bottom:6px}
+.hexagram-symbols{display:flex;flex-direction:column;gap:1px}
+.yao-line{width:54px;height:7px;border-radius:2px;transition:background .3s}
+.yao-yang{background:var(--gold);box-shadow:0 0 4px rgba(201,168,76,0.4)}
+.yao-yin{background:transparent;border:2px solid var(--gold-dark);box-shadow:inset 0 0 4px rgba(0,0,0,0.3)}
+.yao-line.dong{box-shadow:0 0 8px var(--gold-light),0 0 16px rgba(232,201,106,0.4)}
+.arrow-symbol{font-size:26px;color:var(--gold);opacity:0.5}
+.hexagram-meta{font-size:12px;color:var(--text-dim);margin-top:6px}
+.yao-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13px}
+.yao-table td{padding:7px 8px}
+.yao-table tr:nth-child(even) td{background:rgba(255,255,255,0.02)}
+.number-input-area{display:flex;flex-direction:column;align-items:center;gap:14px;margin:16px 0}
+.number-input{width:160px;height:60px;font-size:28px;text-align:center;background:rgba(201,168,76,0.06);border:1.5px solid var(--gold-dark);border-radius:12px;color:var(--gold);outline:none;transition:border-color .3s,box-shadow .3s;letter-spacing:0.2em}
+.number-input:focus{border-color:var(--gold);box-shadow:0 0 12px rgba(201,168,76,0.2)}
+.number-input::placeholder{color:rgba(201,168,76,0.3);font-size:14px}
+.hint-text{font-size:12px;color:var(--text-dim);text-align:center;line-height:1.6;max-width:280px}
+.btn{display:block;width:100%;max-width:280px;margin:14px auto 0;padding:14px 24px;font-size:16px;font-family:inherit;background:linear-gradient(135deg,var(--gold-dark),var(--gold));color:#0a0a12;font-weight:bold;border:none;border-radius:10px;cursor:pointer;letter-spacing:0.15em;transition:all .3s ease;box-shadow:0 2px 12px rgba(201,168,76,0.3)}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(201,168,76,0.5)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.btn-outline{background:transparent;border:1.5px solid var(--gold-dark);color:var(--gold);box-shadow:none;margin-top:10px}
+.btn-outline:hover{background:rgba(201,168,76,0.08);box-shadow:none}
+.result-label{font-size:11px;color:var(--text-dim);letter-spacing:0.15em;margin-bottom:6px}
+.result-value{font-size:14px;color:var(--text);line-height:1.8}
+.result-divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+.ausp-badge{display:inline-block;padding:5px 18px;border-radius:20px;font-size:15px;font-weight:bold;letter-spacing:0.1em;margin-bottom:14px}
+.ausp-great{background:rgba(201,168,76,0.2);color:var(--gold);border:1px solid var(--gold)}
+.ausp-good{background:rgba(76,138,92,0.15);color:var(--green);border:1px solid var(--green)}
+.ausp-neutral{background:rgba(180,160,120,0.12);color:#b4a078;border:1px solid #b4a078}
+.ausp-bad{background:rgba(201,76,76,0.12);color:var(--red);border:1px solid var(--red)}
+.prob-bar-wrap{margin:10px 0 14px}
+.prob-bar-bg{width:100%;height:8px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;margin-bottom:6px}
+.prob-bar-fill{height:100%;border-radius:4px;transition:width 1.2s ease}
+.prob-bar-fill.great{background:linear-gradient(90deg,var(--gold-dark),var(--gold))}
+.prob-bar-fill.good{background:linear-gradient(90deg,#2a6b3a,var(--green))}
+.prob-bar-fill.neutral{background:linear-gradient(90deg,#7a6a4a,#b4a078)}
+.prob-bar-fill.bad{background:linear-gradient(90deg,#8a3a3a,var(--red))}
+.prob-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim)}
+.list-item{padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;line-height:1.7}
+.list-item:last-child{border-bottom:none}
+.advice-item{background:rgba(201,168,76,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;font-size:13px;line-height:1.75}
+.advice-num{display:inline-block;width:20px;height:20px;background:var(--gold);color:#000;border-radius:50%;font-size:11px;text-align:center;line-height:20px;font-weight:bold;margin-right:8px;vertical-align:middle}
+.advice-tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:10px;margin-left:6px;vertical-align:middle}
+.tag-pros{background:rgba(76,138,92,0.15);color:var(--green)}
+.tag-cons{background:rgba(201,76,76,0.12);color:var(--red)}
+.tag-neutral{background:rgba(180,160,120,0.1);color:#b4a078}
+.guci-block{background:rgba(201,168,76,0.04);border-left:3px solid var(--gold);padding:12px 14px;border-radius:0 10px 10px 0;margin:8px 0}
+.guci-original{color:var(--gold);font-size:14px;margin-bottom:6px;font-style:italic}
+.guci-modern{font-size:12px;color:var(--text-dim);line-height:1.8}
+.summary-box{background:linear-gradient(135deg,rgba(201,168,76,0.08),rgba(201,168,76,0.03));border:1px solid rgba(201,168,76,0.3);border-radius:14px;padding:18px;text-align:center;margin:12px 0}
+.summary-box .big-text{font-size:15px;color:var(--text);line-height:1.9}
+.shi-ying-box{background:rgba(201,168,76,0.05);border:1px solid rgba(201,168,76,0.15);border-radius:10px;padding:12px 14px;margin:8px 0;font-size:13px;line-height:1.8}
+.shi-yin{color:var(--gold);font-weight:bold}
+.ying-yin{color:#8a8070;font-weight:bold}
+.core-tip-box{background:linear-gradient(135deg,rgba(201,168,76,0.08),rgba(100,60,160,0.04));border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:12px 14px;margin:8px 0;font-size:13px;line-height:1.8}
+.core-tip-title{font-size:12px;color:var(--gold);margin-bottom:4px}
+.risk-box{background:rgba(201,76,76,0.06);border:1px solid rgba(201,76,76,0.15);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:12px;color:var(--red);line-height:1.7}
+.evo-box{background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.15);border-radius:10px;padding:12px 14px;margin:8px 0}
+.evo-item{font-size:12px;color:var(--text-dim);line-height:1.8;padding:3px 0}
+.evo-item .pos{color:var(--text)}
+.evo-item .desc{color:var(--gold-light)}
+.evo-item .arrow{color:var(--text-dim);margin:0 4px}
+.evo-item .dong-tag{color:var(--red);font-size:10px}
+.timing-item{background:rgba(201,168,76,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.timing-title{font-size:12px;color:var(--gold);margin-bottom:4px}
+.timing-text{font-size:13px;color:var(--text);line-height:1.7}
+.timing-text .best{color:var(--green)}
+.timing-text .warn{color:#b4a078}
+.timing-text .risk{color:var(--red)}
+.hex-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.hex-detail-item{background:rgba(255,255,255,0.02);border-radius:8px;padding:10px 12px}
+.hex-detail-label{font-size:10px;color:var(--text-dim);letter-spacing:0.12em;margin-bottom:3px}
+.hex-detail-value{font-size:12px;color:var(--text);line-height:1.5}
+.hex-detail-value .gold{color:var(--gold)}
+.yao-analysis{font-size:12px}
+.yao-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.yao-row:last-child{border-bottom:none}
+.yao-lbl{color:var(--text-dim);min-width:40px}
+.yao-yy{color:var(--gold);min-width:40px}
+.yao-meaning{flex:1;line-height:1.6}
+.yao-meaning .dong-tag{color:var(--red);font-size:10px;margin-left:4px}
+.pros-cons-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.pros-box{background:rgba(76,138,92,0.06);border:1px solid rgba(76,138,92,0.15);border-radius:10px;padding:12px}
+.cons-box{background:rgba(201,76,76,0.06);border:1px solid rgba(201,76,76,0.15);border-radius:10px;padding:12px}
+.pros-title{font-size:11px;color:var(--green);letter-spacing:0.1em;margin-bottom:6px}
+.cons-title{font-size:11px;color:var(--red);letter-spacing:0.1em;margin-bottom:6px}
+.disclaimer{text-align:center;font-size:11px;color:rgba(138,128,112,0.5);margin-top:24px;line-height:1.6;padding:0 10px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(10,10,18,0.95);backdrop-filter:blur(10px);border-top:1px solid var(--border);padding:10px 16px;padding-bottom:max(10px,env(safe-area-inset-bottom));display:flex;justify-content:center;gap:10px}
+.nav-btn{padding:8px 18px;font-size:13px;border:1px solid var(--border);border-radius:20px;background:transparent;color:var(--text-dim);cursor:pointer;font-family:inherit;transition:all .3s;letter-spacing:0.1em}
+.nav-btn:hover{border-color:var(--gold);color:var(--gold)}
+.nav-btn.primary{background:rgba(201,168,76,0.1);border-color:var(--gold-dark);color:var(--gold)}
+.nav-btn.primary:hover{background:rgba(201,168,76,0.2)}
+.history-item{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:10px;cursor:pointer;transition:border-color .3s}
+.history-item:hover{border-color:var(--gold-dark)}
+.history-title{font-size:14px;color:var(--text);margin-bottom:4px}
+.history-meta{font-size:11px;color:var(--text-dim)}
+.history-hexas{font-size:12px;color:var(--gold);margin-top:4px}
+@keyframes pulse-gold{0%,100%{box-shadow:0 0 10px rgba(201,168,76,0.3)}50%{box-shadow:0 0 24px rgba(201,168,76,0.6)}}
+.pulse{animation:pulse-gold 2s infinite}
+@keyframes bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+.loading-dots{text-align:center;padding:20px}
+.loading-dots span{display:inline-block;width:8px;height:8px;background:var(--gold);border-radius:50%;margin:0 4px;animation:bounce 1.4s infinite ease-in-out both}
+.loading-dots span:nth-child(1){animation-delay:-0.32s}
+.loading-dots span:nth-child(2){animation-delay:-0.16s}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--gold-dark);border-radius:2px}
 </style>
 </head>
 <body>
 <div class="container">
-
-  <!-- ========== 头部 ========== -->
   <header>
     <div class="title">周 易 占 事</div>
     <div class="subtitle">梅花易数 · 起卦问事</div>
     <div class="bagua">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
   </header>
 
-  <!-- ========== 步骤指示器 ========== -->
   <div class="steps-bar" id="stepsBar">
-    <div class="step-dot active" id="s1">①</div>
-    <div class="step-line" id="l1"></div>
-    <div class="step-dot" id="s2">②</div>
-    <div class="step-line" id="l2"></div>
-    <div class="step-dot" id="s3">③</div>
+    <div class="step-dot active" id="s1">①</div><div class="step-line" id="l1"></div>
+    <div class="step-dot" id="s2">②</div><div class="step-line" id="l2"></div>
+    <div class="step-dot" id="s3">③</div><div class="step-line" id="l3"></div>
+    <div class="step-dot" id="s4">④</div>
   </div>
 
-  <!-- ========== 页面1：输入事项 ========== -->
   <div class="page active" id="page1">
     <div class="card">
       <div class="section-title">静心 · 问事</div>
-      <div class="instruction">
-        请在心中默念您想占卜的事情，<br>待心中专注、念头清明后，<br>随意说出一个 1~99 之间的整数。
-      </div>
+      <div class="instruction">请在心中默念您想占卜的事情，<br>待心中专注、念头清明后，<br>随意说出一个 1~99 之间的整数。</div>
       <textarea id="matterInput" rows="3" placeholder="例如：我想知道工会技能大赛的结果如何……"
-        style="width:100%;background:rgba(201,168,76,0.05);border:1px solid rgba(201,168,76,0.2);border-radius:10px;
-               padding:12px 14px;font-size:14px;color:#e8e0d0;font-family:inherit;resize:none;outline:none;
-               line-height:1.7;box-sizing:border-box;transition:border-color 0.3s;"></textarea>
+        style="width:100%;background:rgba(201,168,76,0.05);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:12px 14px;font-size:14px;color:#e8e0d0;font-family:inherit;resize:none;outline:none;line-height:1.7;box-sizing:border-box"></textarea>
     </div>
     <div class="card">
       <div class="section-title">随意报数</div>
       <div class="number-input-area">
-        <input type="number" id="numberInput" class="number-input"
-          placeholder="报个数" min="1" max="99">
-        <div class="hint-text">
-          随意一个数字即可（1~99），<br>不必刻意，不必犹豫，心诚则灵。
-        </div>
+        <input type="number" id="numberInput" class="number-input" placeholder="报个数" min="1" max="99">
+        <div class="hint-text">随意一个数字即可（1~99），<br>不必刻意，不必犹豫，心诚则灵。</div>
       </div>
     </div>
     <button class="btn pulse" onclick="startDivination()">🔮 起 卦</button>
-    <button class="btn btn-outline" onclick="showHistory()" style="max-width:280px;margin:10px auto 0;display:block;">
-      📜 查看历史
-    </button>
+    <button class="btn btn-outline" onclick="showHistory()" style="max-width:280px;margin:10px auto 0;display:block;">📜 查看历史</button>
   </div>
 
-  <!-- ========== 页面2：占卜中（加载动画） ========== -->
   <div class="page" id="page2">
     <div class="card" style="text-align:center;padding:40px 20px;">
-      <div class="loading-dots">
-        <span></span><span></span><span></span>
-      </div>
+      <div class="loading-dots"><span></span><span></span><span></span></div>
       <div style="color:var(--gold);font-size:16px;margin-top:12px;letter-spacing:0.15em;">起卦中……</div>
       <div style="color:var(--text-dim);font-size:13px;margin-top:8px;">心诚则灵，天机已动</div>
     </div>
   </div>
 
-  <!-- ========== 页面3：卦象总览 ========== -->
   <div class="page" id="page3">
-    <div class="card">
-      <div class="section-title">卦 象 总 览</div>
-      <div id="hexaDisplay" class="hexagram-display"></div>
-    </div>
+    <div class="card"><div class="section-title">卦 象 总 览</div><div id="hexaDisplay" class="hexagram-display"></div></div>
     <div class="card">
       <div class="result-label">世 应 格 局</div>
-      <table class="yao-table" id="yaoTable"></table>
+      <div id="shiYingDisplay" class="shi-ying-box"></div>
       <hr class="result-divider">
-      <div class="result-value" id="shiyInfo"></div>
+      <div id="hexCoreTip" class="core-tip-box"></div>
+    </div>
+    <div class="card">
+      <div class="result-label">六 爻 分 析</div>
+      <div id="yaoAnalysisList" class="yao-analysis"></div>
     </div>
   </div>
 
-  <!-- ========== 页面4：吉凶判断 ========== -->
   <div class="page" id="page4">
     <div class="card">
       <div class="section-title">吉 凶 判 断</div>
-      <div style="text-align:center;">
-        <span class="ausp-badge" id="auspBadge"></span>
-      </div>
+      <div style="text-align:center;"><span class="ausp-badge" id="auspBadge"></span></div>
       <div class="prob-bar-wrap">
-        <div class="prob-bar-bg">
-          <div class="prob-bar-fill" id="probBar"></div>
-        </div>
-        <div class="prob-labels">
-          <span>失败</span><span id="probText">成功率 0%</span><span>成功</span>
-        </div>
+        <div class="prob-bar-bg"><div class="prob-bar-fill" id="probBar"></div></div>
+        <div class="prob-labels"><span>失败</span><span id="probText">成功率 0%</span><span>成功</span></div>
       </div>
       <hr class="result-divider">
-      <div class="result-label">有利因素</div>
-      <div id="prosList"></div>
-      <hr class="result-divider">
-      <div class="result-label">不利因素</div>
-      <div id="consList"></div>
+      <div id="prosConsGrid" class="pros-cons-grid"></div>
+    </div>
+    <div class="card">
+      <div class="result-label">卦 象 演 变 轨 迹</div>
+      <div id="evolutionBox" class="evo-box"></div>
+    </div>
+    <div class="card" id="riskCard" style="display:none;">
+      <div class="result-label">重 点 风 险 提 示</div>
+      <div id="riskBox" class="risk-box"></div>
     </div>
   </div>
 
-  <!-- ========== 页面5：时机与建议 ========== -->
   <div class="page" id="page5">
     <div class="card">
       <div class="section-title">时 机 分 析</div>
-      <div class="result-label">当前时机</div>
-      <div class="result-value" id="timingResult" style="font-size:16px;margin-bottom:12px;"></div>
-      <div class="result-label">最佳行动时段</div>
-      <div class="result-value" id="timingDetail"></div>
+      <div id="timingCards"></div>
     </div>
     <div class="card">
       <div class="section-title">行 动 建 议</div>
@@ -571,31 +225,21 @@
     </div>
   </div>
 
-  <!-- ========== 页面6：卦辞启示 ========== -->
   <div class="page" id="page6">
     <div class="card">
       <div class="section-title">主 卦 卦 辞</div>
-      <div class="guaci-block">
-        <div class="guaci-original" id="mainGuaciOrig"></div>
-        <div class="guaci-modern" id="mainGuaciMod"></div>
-      </div>
+      <div class="guci-block"><div class="guci-original" id="mainGuaciOrig"></div><div class="guci-modern" id="mainGuaciMod"></div></div>
     </div>
     <div class="card">
       <div class="section-title">变 卦 卦 辞</div>
-      <div class="guaci-block">
-        <div class="guaci-original" id="changeGuaciOrig"></div>
-        <div class="guaci-modern" id="changeGuaciMod"></div>
-      </div>
+      <div class="guci-block"><div class="guci-original" id="changeGuaciOrig"></div><div class="guci-modern" id="changeGuaciMod"></div></div>
     </div>
     <div class="card">
       <div class="section-title">一 句 话 总 结</div>
-      <div class="summary-box">
-        <div class="big-text" id="summaryText"></div>
-      </div>
+      <div class="summary-box"><div class="big-text" id="summaryText"></div></div>
     </div>
   </div>
 
-  <!-- ========== 历史记录页 ========== -->
   <div class="page" id="pageHistory">
     <div class="card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
@@ -606,13 +250,9 @@
     </div>
   </div>
 
-  <div class="disclaimer">
-    本工具仅供娱乐参考，周易智慧在于启发思考，辅助决策而非决定命运。<br>
-    尽人事，听天命。
-  </div>
+  <div class="disclaimer">本工具仅供娱乐参考，周易智慧在于启发思考，辅助决策而非决定命运。<br>尽人事，听天命。</div>
 </div>
 
-<!-- 底部导航 -->
 <div class="bottom-nav" id="bottomNav" style="display:none;">
   <button class="nav-btn" id="prevBtn" onclick="prevPage()">← 上一步</button>
   <button class="nav-btn primary" id="nextBtn" onclick="nextPage()">下一步 →</button>
@@ -620,647 +260,370 @@
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════
-// 64卦完整数据
-// ═══════════════════════════════════════════════════════
-const HEXAGRAMS = [
-  {id:1,name:"乾",gua:"☰☰",upper:1,lower:1,wx:"金",fw:"西北",xiang:"天",renwu:"父亲/领导",ci:"元亨利贞",jie:"天之道，刚健不息。万事开头，大有可为。坚守正道，必得吉祥。",pros:"事业开创/求职应聘/比赛竞争/谈判签约",cons:"合作依赖/感情犹豫/保守决策",ausp:"大吉",changes:[["姤",2],["履",7],["同人",13],["小畜",9],["大有",14],["坤",2]]},
-  {id:2,name:"坤",gua:"☷☷",upper:8,lower:8,wx:"土",fw:"西南",xiang:"地",renwu:"母亲",ci:"元亨，利牝马之贞。君子有攸往，先迷后得主。",jie:"大地厚德，无所不载。柔顺守正则吉。宜守不宜攻。",pros:"合作共赢/稳健投资/团队凝聚",cons:"主动进攻/风险投资/独断决策",ausp:"平",changes:[["复",24],["豫",16],["师",7],["比",8],["剥",23],["乾",1]]},
-  {id:3,name:"屯",gua:"☵☳",upper:6,lower:4,wx:"水木",fw:"北东",xiang:"水雷",renwu:"初创者",ci:"元亨利贞，勿用有攸往，利建侯。",jie:"万物初生，艰难困顿中蕴含生机。宜固守根基，不宜冒进远行。",pros:"创业初期/组建团队/项目启动",cons:"大规模扩张/急速推进",ausp:"平",changes:[["需",5],["恒",32],["泰",11],["明夷",36],["临",19],["困",47]]},
-  {id:4,name:"蒙",gua:"☶☵",upper:7,lower:6,wx:"土水",fw:"东北北",xiang:"山水",renwu:"求学者",ci:"亨，匪我求童蒙，童蒙求我。",jie:"启蒙开化，须有诚意来求。不耻下问，主动求学方得真知。",pros:"求学考试/技能培训/咨询请教",cons:"商业投资/主动进攻",ausp:"吉",changes:[["讼",6],["解",40],["否",12],["萃",45],["蛊",18],["大过",28]]},
-  {id:5,name:"需",gua:"☵☰",upper:6,lower:1,wx:"水金",fw:"北西北",xiang:"水天",renwu:"等待者",ci:"有孚，光亨，贞吉，利涉大川。",jie:"心怀诚信，光明亨通，正道得吉。虽有险阻在前，诚信待时，可成大事。",pros:"等待时机/投资布局/蓄势待发",cons:"急于求成/轻举妄动",ausp:"吉",changes:[["睽",38],["节",60],["泰",11],["晋",35],["大畜",26],["夬",43]]},
-  {id:6,name:"讼",gua:"☰☵",upper:1,lower:6,wx:"金水",fw:"西北北",xiang:"天水",renwu:"争讼者",ci:"有孚，窒，惕，中吉，终凶。",jie:"争讼之象。诚信受阻，警惕预防。居中和解则吉，坚持争讼则凶。",pros:"官司诉讼风险评估/商业谈判破裂",cons:"主动发起诉讼/挑衅争斗",ausp:"小凶",changes:[["姤",44],["未济",64],["坤",2],["萃",45],["履",10],["兑",58]]},
-  {id:7,name:"师",gua:"☷☵",upper:8,lower:6,wx:"土水",fw:"西南北",xiang:"地水",renwu:"统帅者",ci:"贞，丈人吉，无咎。",jie:"正义之师，统帅得人则吉。军队有统领，行动有纪律，方能成功。",pros:"团队管理/竞技比赛/组织变革",cons:"单兵作战/内部和谈",ausp:"吉",changes:[["坎",29],["临",19],["震",51],["升",46],["乾",1],["大壮",34]]},
-  {id:8,name:"比",gua:"☵☷",upper:6,lower:8,wx:"水土",fw:"北西南",xiang:"水地",renwu:"亲和者",ci:"吉，原筮，元永贞，无咎。",jie:"亲比和睦，诚信正道则无咎。广泛团结，必得吉祥。",pros:"人际结交/团队合作/商务谈判",cons:"独来独往/内部竞争",ausp:"吉",changes:[["坎",29],["观",20],["复",24],["剥",23],["坤",2],["谦",15]]},
-  {id:9,name:"小畜",gua:"☴☰",upper:5,lower:1,wx:"木金",fw:"东南西北",xiang:"风天",renwu:"积蓄者",ci:"亨，密云不雨，自我西郊。",jie:"小有积蓄，蓄势待发。云已聚集，雨尚未来。时未至，当继续积累。",pros:"财富积累/技能储备/人脉积累",cons:"大额支出/激进扩张",ausp:"平",changes:[["乾",1],["家人",37],["中孚",61],["噬嗑",21],["蛊",18],["艮",52]]},
-  {id:10,name:"履",gua:"☰☱",upper:1,lower:2,wx:"金金",fw:"西北西",xiang:"天泽",renwu:"谨慎者",ci:"履虎尾，不咥人，亨。",jie:"脚踏虎尾，小心谨慎，虎不咬人，终得亨通。礼节周全，化险为夷。",pros:"危险行动/复杂谈判/棘手人际",cons:"按部就班的工作",ausp:"吉",changes:[["乾",1],["讼",6],["否",12],["观",20],["姤",44],["渐",53]]},
-  {id:11,name:"泰",gua:"☷☰",upper:8,lower:1,wx:"土金",fw:"西南西北",xiang:"地天",renwu:"通达者",ci:"小往大来，吉亨。",jie:"阴去阳来，天地交泰，万象更新。诸事顺遂，大有可为。",pros:"新项目启动/合作签约/婚恋嫁娶",cons:"高调张扬/过度扩张",ausp:"大吉",changes:[["临",19],["大壮",34],["明夷",36],["丰",55],["乾",1],["否",12]]},
-  {id:12,name:"否",gua:"☰☷",upper:1,lower:8,wx:"金土",fw:"西北西南",xiang:"天地",renwu:"蛰伏者",ci:"否之匪人，不利君子贞，大往小来。",jie:"闭塞之世，小人当道，君子不利。阳去阴来，诸事不顺。",pros:"蛰伏待机/内部整顿/韬光养晦",cons:"冒进扩张/新项目",ausp:"小凶",changes:[["遁",33],["讼",6],["萃",45],["晋",35],["泰",11],["观",20]]},
-  {id:13,name:"同人",gua:"☰☲",upper:1,lower:3,wx:"金火",fw:"西北南",xiang:"天火",renwu:"同心者",ci:"同人于野，亨，利涉大川，利君子贞。",jie:"志同道合，携手共进。开诚布公于天下，亨通无阻，可成大事。",pros:"团队建设/合资合作/公开竞争",cons:"暗箱操作/拉帮结派",ausp:"吉",changes:[["乾",1],["革",49],["离",30],["大有",14],["丰",55],["家人",37]]},
-  {id:14,name:"大有",gua:"☲☰",upper:3,lower:1,wx:"火金",fw:"南西北",xiang:"火天",renwu:"收获者",ci:"元亨。",jie:"至为亨通，诸事大有所获。刚健文明，柔顺得中，大吉之卦。",pros:"事业巅峰/投资回报/项目成功",cons:"开始新冒险/高杠杆投机",ausp:"大吉",changes:[["乾",1],["睽",38],["蛊",18],["乾",1],["震",51],["晋",35]]},
-  {id:15,name:"谦",gua:"☷☶",upper:8,lower:7,wx:"土土",fw:"西南东北",xiang:"地山",renwu:"谦逊者",ci:"亨，君子有终。",jie:"谦逊待人，诸事亨通。君子能始终保持谦逊，必得善终。",pros:"职场晋升/合作谈判/人际交往",cons:"争名夺利/锋芒毕露",ausp:"吉",changes:[["艮",52],["蹇",39],["坤",2],["升",46],["泰",11],["明夷",36]]},
-  {id:16,name:"豫",gua:"☳☷",upper:4,lower:8,wx:"木土",fw:"东西南",xiang:"雷地",renwu:"和乐者",ci:"利建侯行师。",jie:"欢乐和悦，有利于封侯建国、行军打仗。顺应天时而动，众心归附。",pros:"娱乐休闲/团队凝聚/节庆活动",cons:"严肃决策/风险投资",ausp:"平",changes:[["坤",2],["遁",33],["晋",35],["小畜",9],["豫",16],["震",51]]},
-  {id:17,name:"随",gua:"☱☳",upper:2,lower:4,wx:"金木",fw:"西东",xiang:"泽雷",renwu:"随从者",ci:"元亨利贞，无咎。",jie:"随从之卦，大通顺正。追随正道则无咎。追随明主，可成大业。",pros:"跟随合作/职场选择/项目合作",cons:"独立创业/独断专行",ausp:"吉",changes:[["震",51],["屯",3],["泰",11],["兑",58],["无妄",25],["革",49]]},
-  {id:18,name:"蛊",gua:"☶☴",upper:7,lower:5,wx:"土木",fw:"东北东南",xiang:"山风",renwu:"革新者",ci:"元亨，利涉大川，先甲三日，后甲三日。",jie:"除弊革新，大通顺正。利于涉越大川。革新须充分准备，三思而后行。",pros:"公司改革/整顿改革/制度重塑",cons:"维持现状/渐进改良",ausp:"吉",changes:[["巽",57],["鼎",50],["旅",56],["升",46],["井",48],["蛊",18]]},
-  {id:19,name:"临",gua:"☷☱",upper:8,lower:2,wx:"土金",fw:"西南西",xiang:"地泽",renwu:"亲临者",ci:"元亨利贞，至于八月有凶。",jie:"以上临下，大通顺正。君子以德临人，可致亨通。但盛极转衰，须防凶。",pros:"领导督导/实地考察/客户拜访",cons:"远程遥控/脱离基层",ausp:"吉",changes:[["兑",58],["乾",1],["噬嗑",21],["泰",11],["大壮",34],["观",20]]},
-  {id:20,name:"观",gua:"☴☷",upper:5,lower:8,wx:"木土",fw:"东南西南",xiang:"风地",renwu:"观察者",ci:"盥而不荐，有孚颙若。",jie:"观仰祭祀，心诚则灵。观察天下，当以诚待人，以德服人。",pros:"市场调研/项目评估/合作评估",cons:"快速决策/立即行动",ausp:"平",changes:[["坤",2],["渐",53],["晋",35],["萃",45],["否",12],["泰",11]]},
-  {id:21,name:"噬嗑",gua:"☲☳",upper:3,lower:4,wx:"火木",fw:"南东",xiang:"火雷",renwu:"明断者",ci:"亨，利用狱。",jie:"牙齿咬合，方能亨通。利于明辨是非，审理刑狱。",pros:"法律诉讼/纠纷调解/障碍清除",cons:"商业合作初期/内部和谐",ausp:"平",changes:[["震",51],["屯",3],["颐",27],["晋",35],["离",30],["颐",27]]},
-  {id:22,name:"贲",gua:"☶☲",upper:7,lower:3,wx:"土火",fw:"东北南",xiang:"山火",renwu:"文饰者",ci:"亨，小利有攸往。",jie:"文饰美化，亨通顺遂。小有利益可图，不宜大动。",pros:"形象包装/品牌设计/营销推广",cons:"过分包装/弄虚作假",ausp:"平",changes:[["离",30],["大畜",26],["颐",27],["损",41],["贲",22],["艮",52]]},
-  {id:23,name:"剥",gua:"☶☷",upper:7,lower:8,wx:"土土",fw:"东北西南",xiang:"山地",renwu:"蛰伏者",ci:"不利有攸往。",jie:"群阴剥阳，诸事不利。阴长阳消，小人得势，君子宜守不宜动。",pros:"蛰伏防守/保存实力/收缩战线",cons:"进攻扩张/新项目启动",ausp:"大凶",changes:[["坤",2],["艮",52],["晋",35],["观",20],["泰",11],["复",24]]},
-  {id:24,name:"复",gua:"☷☳",upper:8,lower:4,wx:"土木",fw:"西南东",xiang:"地雷",renwu:"复兴者",ci:"亨，出入无疾，朋来无咎，反复其道，七日来复。",jie:"一阳来复，亨通无阻。出入平安，友人相助。正道反复，短期可回归。",pros:"低谷反弹/疾病康复/项目重启",cons:"继续下滑/放弃希望",ausp:"大吉",changes:[["震",51],["屯",3],["坤",2],["颐",27],["复",24],["坤",2]]},
-  {id:25,name:"无妄",gua:"☰☳",upper:1,lower:4,wx:"金木",fw:"西北东",xiang:"天雷",renwu:"真诚者",ci:"元亨利贞，其匪正有眚，不利有攸往。",jie:"纯正无妄，大通顺正。若不守正则有灾祸，不宜远行。",pros:"诚信交易/正当竞争/规范管理",cons:"投机取巧/欺骗隐瞒",ausp:"吉",changes:[["震",51],["乾",1],["否",12],["噬嗑",21],["无妄",25],["随",17]]},
-  {id:26,name:"大畜",gua:"☶☰",upper:7,lower:1,wx:"土金",fw:"东北西北",xiang:"山天",renwu:"储备者",ci:"利贞，不家食吉，利涉大川。",jie:"大的积蓄，宜守正道。不食于家则吉，利于涉越大川。",pros:"知识积累/财富储蓄/人才储备",cons:"过度节俭吝啬/拒绝分享",ausp:"吉",changes:[["乾",1],["需",5],["泰",11],["大有",14],["颐",27],["大畜",26]]},
-  {id:27,name:"颐",gua:"☶☳",upper:7,lower:4,wx:"土木",fw:"东北东",xiang:"山雷",renwu:"自养者",ci:"贞吉，观颐，自求口实。",jie:"颐养正则吉。观察颐养之道，当自食其力，不依赖他人。",pros:"身体健康/财务自足/人才培养",cons:"依赖他人/不劳而获",ausp:"吉",changes:[["噬嗑",21],["屯",3],["剥",23],["大畜",26],["颐",27],["剥",23]]},
-  {id:28,name:"大过",gua:"☱☴",upper:2,lower:5,wx:"金木",fw:"西东南",xiang:"泽风",renwu:"超越者",ci:"栋桡，利有攸往，亨。",jie:"栋梁弯曲，承受压力。利于有所前往，中途有险但终可通达。",pros:"危机处理/极限挑战/重大变故",cons:"按部就班/保守稳妥",ausp:"小凶",changes:[["巽",57],["夬",43],["咸",31],["姤",44],["大过",28],["困",47]]},
-  {id:29,name:"坎",gua:"☵☵",upper:6,lower:6,wx:"水",fw:"北",xiang:"水",renwu:"涉险者",ci:"有孚，维心亨，行有尚。",jie:"重重险难，心怀诚信，意志坚定则可亨通。行动有功。",pros:"险中求存/高风险投资/困境突围",cons:"平安无事/常规决策",ausp:"小凶",changes:[["井",48],["需",5],["坤",2],["讼",6],["坎",29],["困",47]]},
-  {id:30,name:"离",gua:"☲☲",upper:3,lower:3,wx:"火",fw:"南",xiang:"火",renwu:"光明者",ci:"利贞，亨，畜牝牛吉。",jie:"光明照耀，亨通顺正。宜养柔顺之德，则吉。",pros:"文化教育/品牌公关/美丽事业",cons:"阴暗操作/内斗倾轧",ausp:"吉",changes:[["噬嗑",21],["大有",14],["旅",56],["晋",35],["离",30],["睽",38]]},
-  {id:31,name:"咸",gua:"☱☶",upper:2,lower:7,wx:"金土",fw:"西东北",xiang:"泽山",renwu:"感应者",ci:"亨利贞，取女吉。",jie:"感应相吸，亨通顺正。少男少女相互感应，情投意合。",pros:"恋爱婚姻/人际感应/商务感应",cons:"单相思无回应/强迫他人",ausp:"吉",changes:[["艮",52],["遁",33],["坤",2],["姤",44],["咸",31],["蹇",39]]},
-  {id:32,name:"恒",gua:"☳☴",upper:4,lower:5,wx:"木木",fw:"东东南",xiang:"雷风",renwu:"恒久者",ci:"亨，无咎，利贞，利有攸往。",jie:"恒久之道，亨通无咎。守正则利，有利于有所前往。",pros:"婚姻长久/职业稳定/长期投资",cons:"短期投机/频繁变换",ausp:"吉",changes:[["巽",57],["大壮",34],["坤",2],["晋",35],["恒",32],["遁",33]]},
-  {id:33,name:"遁",gua:"☰☶",upper:1,lower:7,wx:"金土",fw:"西北东北",xiang:"天山",renwu:"退隐者",ci:"亨，小利贞。",jie:"退避蛰伏，亨通顺正。小有利益可图，宜守正退避。",pros:"离职退隐/战略收缩/保存实力",cons:"逆境冒进/强行出头",ausp:"平",changes:[["咸",31],["乾",1],["旅",56],["姤",44],["遁",33],["否",12]]},
-  {id:34,name:"大壮",gua:"☳☰",upper:4,lower:1,wx:"木金",fw:"东西北",xiang:"雷天",renwu:"壮大者",ci:"利贞。",jie:"壮大强盛，宜守正道。壮而不过，方能保持优势。",pros:"实力壮大/市场扩张/竞技比赛",cons:"过度扩张/恃强凌弱",ausp:"吉",changes:[["夬",43],["需",5],["泰",11],["大有",14],["震",51],["遁",33]]},
-  {id:35,name:"晋",gua:"☲☷",upper:3,lower:8,wx:"火土",fw:"南西南",xiang:"火地",renwu:"晋升者",ci:"康侯用锡马蕃庶，昼日三接。",jie:"晋升发达，受到赏赐。光明磊落，众阴顺承，必得重用。",pros:"仕途升迁/考试晋级/项目获批",cons:"激进冒进/与人交恶",ausp:"吉",changes:[["剥",23],["旅",56],["噬嗑",21],["否",12],["晋",35],["观",20]]},
-  {id:36,name:"明夷",gua:"☷☲",upper:8,lower:3,wx:"土火",fw:"西南南",xiang:"地火",renwu:"受屈者",ci:"利艰贞。",jie:"光明受伤，宜在艰难中守正。韬光养晦，等待时机。",pros:"低谷蛰伏/职场打压/暗中积累",cons:"公开对抗/高调反击",ausp:"小凶",changes:[["谦",15],["泰",11],["复",24],["晋",35],["明夷",36],["临",19]]},
-  {id:37,name:"家人",gua:"☴☲",upper:5,lower:3,wx:"木火",fw:"东南南",xiang:"风火",renwu:"齐家者",ci:"利女贞。",jie:"家庭之卦，宜女子守正。家庭和睦，风自火出。",pros:"家庭和睦/婚姻感情/家业经营",cons:"外部事业冒险/内部矛盾激化",ausp:"吉",changes:[["同人",13],["鼎",50],["益",42],["小畜",9],["家人",37],["渐",53]]},
-  {id:38,name:"睽",gua:"☲☱",upper:3,lower:2,wx:"火金",fw:"南北西",xiang:"火泽",renwu:"乖违者",ci:"小事吉。",jie:"乖违睽隔，小事可成，大事则凶。求同存异，小处着手。",pros:"人际分歧/意见不合/小额交易",cons:"大型合作/重要决策合一",ausp:"平",changes:[["兑",58],["大有",14],["蹇",39],["晋",35],["睽",38],["未济",64]]},
-  {id:39,name:"蹇",gua:"☵☶",upper:6,lower:7,wx:"水土",fw:"北东北",xiang:"水山",renwu:"艰难者",ci:"利西南，不利东北，利见大人，贞吉。",jie:"前有险阻，后有高山。宜往西南，不宜往东北。利于见大人，守正则吉。",pros:"困境突围/逆境求援/危机处理",cons:"贸然行动/单独冒进",ausp:"小凶",changes:[["渐",53],["需",5],["噬嗑",21],["井",48],["蹇",39],["艮",52]]},
-  {id:40,name:"解",gua:"☳☵",upper:4,lower:6,wx:"木水",fw:"东北北",xiang:"雷水",renwu:"脱难者",ci:"利西南，无攸往，其来复吉，有攸往，夙吉。",jie:"解除困难。返回原地则吉，行动则宜早不宜迟。",pros:"纠纷解决/危机解除/矛盾调和",cons:"制造新问题/快速扩张",ausp:"吉",changes:[["坎",29],["需",5],["坤",2],["豫",16],["解",40],["未济",64]]},
-  {id:41,name:"损",gua:"☶☱",upper:7,lower:2,wx:"土金",fw:"东北西",xiang:"山泽",renwu:"减损者",ci:"元吉，无咎，可贞，利有攸往。",jie:"减损之道，大吉无咎。守正则利。损下益上，其道上行。",pros:"适度让利/谈判妥协/节约成本",cons:"过度减损/自我牺牲",ausp:"吉",changes:[["兑",58],["大畜",26],["泰",11],["蒙",4],["损",41],["益",42]]},
-  {id:42,name:"益",gua:"☴☳",upper:5,lower:4,wx:"木木",fw:"东南东",xiang:"风雷",renwu:"增益者",ci:"利有攸往，利涉大川。",jie:"增益之卦，利于有所前往。损上益下，天下悦服。",pros:"政策利好/投资增益/技能提升",cons:"贪得无厌/过度索取",ausp:"大吉",changes:[["颐",27],["屯",3],["噬嗑",21],["观",20],["益",42],["夬",43]]},
-  {id:43,name:"夬",gua:"☱☰",upper:2,lower:1,wx:"金金",fw:"西西北",xiang:"泽天",renwu:"决断者",ci:"扬于王庭，孚号有厉，告自邑，不利即戎，利有攸往。",jie:"决断果敢，光明正大。号令天下，小心危险。宜文德不宜武力。",pros:"果断决策/清理门户/风险出清",cons:"犹豫不决/反复无常",ausp:"吉",changes:[["乾",1],["大有",14],["泰",11],["需",5],["夬",43],["乾",1]]},
-  {id:44,name:"姤",gua:"☰☴",upper:1,lower:5,wx:"金木",fw:"西北东南",xiang:"天风",renwu:"邂逅者",ci:"女壮，勿用取女。",jie:"一阴遇五阳，阴气始生。女子过壮，不宜娶之。邂逅相遇，不可长久。",pros:"意外邂逅/临时合作/偶发事件",cons:"长久关系/稳定合作",ausp:"平",changes:[["巽",57],["乾",1],["观",20],["大过",28],["姤",44],["遁",33]]},
-  {id:45,name:"萃",gua:"☱☷",upper:2,lower:8,wx:"金土",fw:"西西南",xiang:"泽地",renwu:"聚集者",ci:"亨利贞，用大牲吉，利有攸往。",jie:"聚集相会，亨通顺正。用大礼祭祀则吉，利于有所前往。",pros:"人才聚集/会议论坛/婚礼嫁娶",cons:"离散分居/单打独斗",ausp:"吉",changes:[["坤",2],["泰",11],["晋",35],["否",12],["萃",45],["谦",15]]},
-  {id:46,name:"升",gua:"☷☴",upper:8,lower:5,wx:"土木",fw:"西南东南",xiang:"地风",renwu:"上升者",ci:"元亨，用见大人，勿恤，南征吉。",jie:"上升发展，大亨通。有利于拜见大人，不必忧虑。往南方发展则吉。",pros:"仕途升迁/职位晋升/地位提升",cons:"降职调离/急于求成",ausp:"吉",changes:[["泰",11],["蛊",18],["晋",35],["观",20],["升",46],["坤",2]]},
-  {id:47,name:"困",gua:"☱☵",upper:2,lower:6,wx:"金水",fw:"西北北",xiang:"泽水",renwu:"困境者",ci:"亨贞，大人吉，无咎，有言不信。",jie:"陷入困境，但亨通守正。困厄之时，言而无信。",pros:"经济困境/事业瓶颈/情绪低落",cons:"轻举妄动/过度承诺",ausp:"小凶",changes:[["坎",29],["需",5],["坤",2],["讼",6],["困",47],["萃",45]]},
-  {id:48,name:"井",gua:"☵☴",upper:6,lower:5,wx:"水木",fw:"北东南",xiang:"水风",renwu:"养人者",ci:"改邑不改井，无丧无得，往来井井。",jie:"城邑可改，井不可改。井水不变，取用无穷。用绳汲水而瓶子坏了则有凶。",pros:"制度建设/人才培养/公共服务",cons:"破坏传统/竭泽而渔",ausp:"吉",changes:[["巽",57],["需",5],["噬嗑",21],["蛊",18],["井",48],["巽",57]]},
-  {id:49,name:"革",gua:"☱☲",upper:2,lower:3,wx:"金火",fw:"西南北",xiang:"泽火",renwu:"变革者",ci:"巳日乃孚，元亨利贞，悔亡。",jie:"变革之卦，巳日（时机成熟）建立威信。大通顺正，悔恨消除。",pros:"体制改革/制度变革/技术革新",cons:"保守维持/时机未到",ausp:"吉",changes:[["同人",13],["夬",43],["坤",2],["鼎",50],["革",49],["姤",44]]},
-  {id:50,name:"鼎",gua:"☲☴",upper:3,lower:5,wx:"火木",fw:"南东南",xiang:"火风",renwu:"定鼎者",ci:"元吉，亨。",jie:"烹饪成新，养贤育才。鼎者，定也，国之重器。",pros:"创业立新/制度确立/人才引进",cons:"破坏旧制/颠覆权威",ausp:"吉",changes:[["蛊",18],["旅",56],["晋",35],["井",48],["鼎",50],["姤",44]]},
-  {id:51,name:"震",gua:"☳☳",upper:4,lower:4,wx:"木",fw:"东",xiang:"雷",renwu:"震惊者",ci:"亨，震来虩虩，笑言哑哑，震惊百里，不丧匕鬯。",jie:"亨通。震惊来时有恐惧，笑语如常。震惊百里，不失匕鬯（从容镇定）。",pros:"突发危机/紧急行动/市场震荡",cons:"按部就班/毫无准备",ausp:"平",changes:[["豫",16],["噬嗑",21],["复",24],["升",46],["震",51],["艮",52]]},
-  {id:52,name:"艮",gua:"☶☶",upper:7,lower:7,wx:"土",fw:"东北",xiang:"山",renwu:"静止者",ci:"艮其背，不获其身，行其庭，不见其人，无咎。",jie:"停止在背部，身体无法前行。适时停止则无咎。",pros:"暂停决策/保持观望/稳健防守",cons:"冒进扩张/强行推进",ausp:"平",changes:[["剥",23],["贲",22],["旅",56],["渐",53],["艮",52],["谦",15]]},
-  {id:53,name:"渐",gua:"☴☶",upper:5,lower:7,wx:"木土",fw:"东南东北",xiang:"风山",renwu:"渐进者",ci:"女归吉，利贞。",jie:"如女子出嫁，循序渐进则吉。利于守正。",pros:"婚恋嫁娶/职业发展/项目推进",cons:"急功近利/一步登天",ausp:"吉",changes:[["艮",52],["需",5],["晋",35],["观",20],["渐",53],["归妹",54]]},
-  {id:54,name:"归妹",gua:"☳☱",upper:4,lower:2,wx:"木金",fw:"东西西",xiang:"雷泽",renwu:"出嫁者",ci:"征凶，无攸利。",jie:"行动有凶，无所利。少女从长男，不正当之婚，有失礼仪。",pros:"婚恋感情/商业联姻/并购整合",cons:"轻率婚嫁/商业骗局",ausp:"小凶",changes:[["兑",58],["丰",55],["泰",11],["节",60],["归妹",54],["渐",53]]},
-  {id:55,name:"丰",gua:"☳☲",upper:4,lower:3,wx:"木火",fw:"东南南",xiang:"雷火",renwu:"丰盛者",ci:"亨，王假之，勿忧，宜日中。",jie:"盛大丰盈，亨通。君王至丰盛之道，勿须忧虑，宜如日在中天。",pros:"事业高峰/业绩丰收/规模扩张",cons:"巅峰之后/盛极忘形",ausp:"大吉",changes:[["家人",37],["需",5],["泰",11],["晋",35],["丰",55],["震",51]]},
-  {id:56,name:"旅",gua:"☶☲",upper:7,lower:3,wx:"土火",fw:"东北南",xiang:"火山",renwu:"旅羁者",ci:"小亨，旅贞吉。",jie:"小有亨通，旅途守正则吉。羁旅在外，宜柔不宜刚。",pros:"出差旅行/外派任职/海外发展",cons:"恋家思乡/反复无常",ausp:"平",changes:[["离",30],["鼎",50],["晋",35],["巽",57],["旅",56],["艮",52]]},
-  {id:57,name:"巽",gua:"☴☴",upper:5,lower:5,wx:"木",fw:"东南",xiang:"风",renwu:"顺入者",ci:"小亨，利有攸往，利见大人。",jie:"小有亨通，利于有所前往。顺从而入，随风而行。",pros:"深入渗透/柔性管理/授权放权",cons:"强硬对抗/独断专行",ausp:"平",changes:[["姤",44],["小畜",9],["家人",37],["益",42],["巽",57],["蛊",18]]},
-  {id:58,name:"兑",gua:"☱☱",upper:2,lower:2,wx:"金",fw:"西",xiang:"泽",renwu:"和悦者",ci:"亨，利贞。",jie:"亨通顺正，喜悦之和。言语悦人，人际和谐。",pros:"人际沟通/谈判协商/润滑关系",cons:"轻信承诺/言过其实",ausp:"吉",changes:[["夬",43],["需",5],["泰",11],["革",49],["兑",58],["困",47]]},
-  {id:59,name:"涣",gua:"☴☵",upper:5,lower:6,wx:"木水",fw:"东南北",xiang:"风水",renwu:"解散者",ci:"王假有庙，利涉大川，利贞。",jie:"君王至庙祭祀，利于涉越大川，守正则利。风来水散，解散聚合。",pros:"化解矛盾/组织拆分/资产重组",cons:"巩固团结/紧密合作",ausp:"平",changes:[["坎",29],["需",5],["中孚",61],["观",20],["涣",59],["巽",57]]},
-  {id:60,name:"节",gua:"☵☱",upper:6,lower:2,wx:"水金",fw:"北西",xiang:"水泽",renwu:"节制者",ci:"亨，苦节不可贞。",jie:"亨通顺正，但过度节制则不可。节贵在适度，过节则凶。",pros:"财务预算/制度管理/成本控制",cons:"过度节俭/苛刻管理",ausp:"吉",changes:[["兑",58],["需",5],["噬嗑",21],["临",19],["节",60],["坎",29]]},
-  {id:61,name:"中孚",gua:"☴☱",upper:5,lower:2,wx:"木金",fw:"东南西",xiang:"风泽",renwu:"诚信者",ci:"豚鱼吉，利涉大川，利贞。",jie:"诚信感通，连豚鱼也能感化则吉。利于涉越大川，守正则利。",pros:"诚信交易/合作协议/道德诚信",cons:"欺骗行为/口是心非",ausp:"吉",changes:[["履",10],["小畜",9],["泰",11],["观",20],["中孚",61],["损",41]]},
-  {id:62,name:"小过",gua:"☳☶",upper:4,lower:7,wx:"木土",fw:"东东北",xiang:"雷山",renwu:"小越者",ci:"亨，利贞，可小事，不可大事。",jie:"小有过越则可弥补。可以做小事，不可以做大事。",pros:"小事变通/轻微越权/弹性处理",cons:"大事决策/原则问题",ausp:"平",changes:[["艮",52],["豫",16],["晋",35],["谦",15],["小过",62],["丰",55]]},
-  {id:63,name:"既济",gua:"☵☲",upper:6,lower:3,wx:"水火",fw:"北南",xiang:"水火",renwu:"已成者",ci:"亨，小利贞，初吉终乱。",jie:"亨通顺正，小有利益。初期吉祥，最终混乱。既成之后，易生松懈。",pros:"项目完成/目标达成/成功在望",cons:"骄傲自满/不思进取",ausp:"平",changes:[["睽",38],["需",5],["泰",11],["晋",35],["既济",63],["未济",64]]},
-  {id:64,name:"未济",gua:"☲☵",upper:3,lower:6,wx:"火水",fw:"南北",xiang:"火水",renwu:"未成者",ci:"亨，濡其尾，无攸利，不续终也。",jie:"事情未成，不能持续至终。小狐狸渡河沾湿尾巴，无所利益。",pros:"创业初期/项目启动/蓄势待发",cons:"中途放弃/轻率涉险",ausp:"平",changes:[["坎",29],["讼",6],["坤",2],["晋",35],["未济",64],["乾",1]]}
+// ═══════════════════ 64卦详细数据 ═══════════════════
+// lq6: [上爻,五爻,四爻,三爻,二爻,初爻] 的六亲含义
+// changes[]: [上爻→变卦, 五爻→变卦, 四爻→变卦, 三爻→变卦, 二爻→变卦, 初爻→变卦]
+const H = [
+{name:"乾",upper:1,lower:1,wx:"金",fw:"西北",xiang:"天",ausp:"大吉",ci:"元亨利贞。",jie:"天之道，刚健不息。万事开头，大有可为。坚守正道，必得吉祥。",lq6:["父母爻（最终结局）","父母爻（上级/靠山）","官鬼爻（关键门槛）","兄弟爻（同辈竞争）","妻财爻（核心资源）","兄弟爻（起始竞争者）"],syyx:"世五应二。刚健果决，主动出击有利；但过刚则折，须防盛极而衰。",syy:"乾为天，刚健不息。世爻居五爻（决策核心），应爻居二爻（执行层）。主卦刚健有力，主动出击胜算较大。变卦明夷暗示初期会有压制，但只要坚守正道，终能化险为夷。",pros:"事业开创、求职应聘、谈判签约、投资出击、比赛竞争",cons:"合作依赖、感情犹豫、保守决策",changes:[2,14,9,13,10,44]},
+{name:"坤",upper:8,lower:8,wx:"土",fw:"西南",xiang:"地",ausp:"平",ci:"元亨，利牝马之贞。君子有攸往，先迷后得主。",jie:"大地厚德，无所不载。柔顺守正则吉。宜守不宜攻。",lq6:["父母爻（外在压力）","父母爻（主流文化）","官鬼爻（表面官贵）","兄弟爻（暗中小人）","妻财爻（稳得之财）","子孙爻（初始生命力）"],syyx:"世二应五。柔顺包容，静待时机有利；主动出击则迷失方向。",syy:"坤为地，厚德载物。世爻在二爻（执行/资源位），应爻在五爻（决策核心）。部门以柔顺之德应对，应爻代表整体竞争环境。谦逊待人、守正不争，反而能获得上级支持与资源倾斜。",pros:"合作共赢、稳健投资、团队凝聚",cons:"主动进攻、风险投资、独断决策",changes:[1,16,7,8,23,24]},
+{name:"屯",upper:6,lower:4,wx:"水木",fw:"北东",xiang:"水雷",ausp:"平",ci:"元亨利贞，勿用有攸往，利建侯。",jie:"万物初生，艰难困顿中蕴含生机。宜固守根基，不宜冒进远行。",lq6:["父母爻（远方目标）","父母爻（决策层）","官鬼爻（门槛/需认可）","兄弟爻（内部分歧）","妻财爻（中层执行）","子孙爻（初期行动力）"],syyx:"世五应初。建侯立业之卦，草创艰难，上下同心可成。",syy:"水雷屯，万物初生。世爻在五爻（决策核心），应爻在初爻（事情萌芽/基层）。一季度开局艰难，如草木初生，需要先扎根建立基础。部门初期行动力强但根基尚浅，需争取上级认可方能站稳脚跟。",pros:"创业初期、组建团队、项目启动",cons:"大规模扩张、急速推进",changes:[5,32,11,36,19,47]},
+{name:"蒙",upper:7,lower:6,wx:"土水",fw:"东北北",xiang:"山水",ausp:"吉",ci:"亨，匪我求童蒙，童蒙求我。",jie:"启蒙开化，须有诚意来求。不耻下问，主动求学方得真知。",lq6:["父母爻（学成出路）","父母爻（经典学问）","官鬼爻（学业功名）","兄弟爻（求学阻力）","妻财爻（启蒙资源）","子孙爻（启蒙智慧）"],syyx:"世二应五。求知问道之卦，谦心受教则亨。",syy:"山水蒙，启蒙开化。世爻在二爻，应爻在五爻。此卦提示一季度需要主动请教、寻求指导，在竞争中保持学习心态，不耻下问反而能获得突破。",pros:"求学考试、技能培训、咨询请教",cons:"商业投资、主动进攻",changes:[6,40,12,45,18,28]},
+{name:"需",upper:6,lower:1,wx:"水金",fw:"北西北",xiang:"水天",ausp:"吉",ci:"有孚，光亨，贞吉，利涉大川。",jie:"心怀诚信，光明亨通，正道得吉。虽有险阻在前，诚信待时，可成大事。",lq6:["父母爻（外来压力）","父母爻（中心等待）","官鬼爻（门槛/机遇）","兄弟爻（小节波折）","妻财爻（暗中积累）","兄弟爻（等待中的同伴）"],syyx:"世五应二。守正待时之卦，有险在前，以诚待人，不躁进。",syy:"水天需，心怀诚信，光明亨通。世爻在五爻（决策层），应爻在二爻（执行层）。一季度开局遇险在前（如竞争对手强势、政策压力等），但只要守正诚信、耐心等待，时机成熟自会有收获。",pros:"等待时机、投资布局、蓄势待发",cons:"急于求成、轻举妄动",changes:[38,60,11,35,26,43]},
+{name:"讼",upper:1,lower:6,wx:"金水",fw:"西北北",xiang:"天水",ausp:"小凶",ci:"有孚，窒，惕，中吉，终凶。",jie:"争讼之象。诚信受阻，警惕预防。居中和解则吉，坚持争讼则凶。",lq6:["父母爻（最终结局）","父母爻（最高裁决）","官鬼爻（官司诉讼）","兄弟爻（旧怨积累）","妻财爻（利益争夺）","子孙爻（最初起因）"],syyx:"世五应二。争讼之卦，和解为上，诉讼两败俱伤。",syy:"天水讼，争讼之象。世爻在五爻（决策核心），应爻在二爻（执行层）。一季度若涉及竞争排名，须警惕与对手的摩擦升级。最佳策略是寻求第三方协调而非正面对抗。争则皆凶，退一步海阔天空。",pros:"官司诉讼风险评估、合作纠纷化解",cons:"主动发起诉讼、挑衅争斗",changes:[44,64,2,45,10,58]},
+{name:"师",upper:8,lower:6,wx:"土水",fw:"西南北",xiang:"地水",ausp:"吉",ci:"贞，丈人吉，无咎。",jie:"正义之师，统帅得人则吉。军队有统领，行动有纪律，方能成功。",lq6:["父母爻（战争结局）","父母爻（战略后方）","官鬼爻（指挥将领）","兄弟爻（内讧风险）","妻财爻（主力军队）","子孙爻（先锋部队）"],syyx:"世二应五。统帅众人之卦，任贤用能，纪律严明则胜。",syy:"地水师，正义之师。世爻在二爻（执行/资源位），应爻在五爻（决策核心）。一季度部门排名竞争中，此卦提示：统一团队意志、令行禁止是取胜关键。切忌内部纷争、各自为战。",pros:"团队管理、竞技比赛、组织变革",cons:"单兵作战、内部和谈",changes:[29,19,51,46,1,34]},
+{name:"比",upper:6,lower:8,wx:"水土",fw:"北西南",xiang:"水地",ausp:"吉",ci:"吉，原筮，元永贞，无咎。",jie:"亲比和睦，诚信正道则无咎。广泛团结，必得吉祥。",lq6:["父母爻（远方依附）","父母爻（众望所归）","官鬼爻（外在比附）","兄弟爻（比而不亲）","妻财爻（得比之利）","子孙爻（核心成员）"],syyx:"世五应初。九五居中，众人亲附；上六阴居极，附而不正。",syy:"水地比，亲比和睦。世爻在五爻（核心决策位），应爻在初爻（基层/萌芽）。一季度竞争中，广泛团结内部力量、真诚相交，比单纯对抗更能取得优势。得人心者得天下。",pros:"人际结交、团队合作、商务谈判",cons:"独来独往、内部竞争",changes:[29,20,24,23,2,15]},
+{name:"小畜",upper:5,lower:1,wx:"木金",fw:"东南西北",xiang:"风天",ausp:"平",ci:"亨，密云不雨，自我西郊。",jie:"小有积蓄，蓄势待发。云已聚集，雨尚未来。时未至，当继续积累。",lq6:["父母爻（积蓄上限）","父母爻（知识积累）","官鬼爻（职级关卡）","兄弟爻（积蓄受阻）","妻财爻（经济积累）","兄弟爻（积蓄初期）"],syyx:"世四应初。蓄养待发之卦，积蓄不足，不宜大动。",syy:"风天小畜，小有积蓄，蓄势待发。世爻在四爻（接近核心），应爻在初爻（起步/基础）。一季度初期处于积累阶段，实力尚未充实，不宜过早暴露野心或全力冲刺。默默积累，暗中观察。",pros:"财富积累、技能储备、人脉积累",cons:"大额支出、激进扩张",changes:[1,37,61,21,18,52]},
+{name:"履",upper:1,lower:2,wx:"金金",fw:"西北西",xiang:"天泽",ausp:"吉",ci:"履虎尾，不咥人，亨。",jie:"脚踏虎尾，小心谨慎，虎不咬人，终得亨通。礼节周全，化险为夷。",lq6:["父母爻（最终结局）","父母爻（最高目标）","官鬼爻（核心障碍）","兄弟爻（刚愎自用）","妻财爻（柔顺得中）","子孙爻（谨慎起步）"],syyx:"世五应初。以刚凌柔，以礼化险。履危不危，在于谨慎。",syy:"天泽履，脚踏虎尾，小心谨慎则亨通。世爻在五爻（决策核心），应爻在初爻（起步/基础）。一季度面对虎狼之势（强势竞争对手），礼节周全、谨慎行事、以柔克刚，反而能化险为夷。",pros:"危险行动、复杂谈判、棘手人际",cons:"按部就班的工作",changes:[1,6,12,20,44,53]},
+{name:"泰",upper:8,lower:1,wx:"土金",fw:"西南西北",xiang:"地天",ausp:"大吉",ci:"小往大来，吉亨。",jie:"阴去阳来，天地交泰，万象更新。诸事顺遂，大有可为。",lq6:["父母爻（由盛转衰）","父母爻（核心治理）","官鬼爻（社会秩序）","兄弟爻（繁荣中小矛盾）","妻财爻（经济繁荣）","子孙爻（创新活力）"],syyx:"世三应上。阴阳交泰，三阳开泰。诸事亨通，但泰极生否，需防微杜渐。",syy:"地天泰，天地交泰，万象更新。世爻在三爻（众人参与位），应爻在上爻（外在影响）。此卦为大吉之象！诸事顺遂大有可为。但泰极生否，须在高光时刻保持警惕，不可过度张扬。",pros:"新项目启动、合作签约、婚恋嫁娶",cons:"高调张扬、过度扩张",changes:[19,34,36,55,1,12]},
+{name:"否",upper:1,lower:8,wx:"金土",fw:"西北西南",xiang:"天地",ausp:"小凶",ci:"否之匪人，不利君子贞，大往小来。",jie:"闭塞之世，小人当道，君子不利。阳去阴来，诸事不顺。",lq6:["父母爻（闭塞之极）","父母爻（主流压制）","官鬼爻（职场压制）","兄弟爻（内部分裂）","妻财爻（经济萎缩）","兄弟爻（小人得志）"],syyx:"世上应三。阴阳不交，否塞不通。君子宜守正待时，不宜妄动。",syy:"天地否，闭塞之世，小人当道。世爻在上爻（外在影响），应爻在三爻（众人参与位）。一季度若遭遇此卦，说明外部环境闭塞、竞争格局不利。最佳策略是：韬光养晦、内部整顿、保存实力。否极泰来，等待转机。",pros:"蛰伏待机、内部整顿、韬光养晦",cons:"冒进扩张、新项目、高调张扬",changes:[33,6,45,35,11,20]},
+{name:"同人",upper:1,lower:3,wx:"金火",fw:"西北南",xiang:"天火",ausp:"吉",ci:"同人于野，亨，利涉大川，利君子贞。",jie:"志同道合，携手共进。开诚布公于天下，亨通无阻，可成大事。",lq6:["父母爻（天下大同）","父母爻（求同存异）","官鬼爻（升职障碍）","兄弟爻（合作破裂风险）","妻财爻（以文会友）","子孙爻（志同道合者）"],syyx:"世五应二。广交同人，开诚布公，无偏无党则亨。",syy:"天火同人，志同道合，携手共进。世爻在五爻（核心），应爻在二爻（资源位）。一季度竞争中，开诚布公、争取同盟比孤军奋战更有效。寻找志同道合的伙伴往往是取胜的关键。",pros:"团队建设、合资合作、公开竞争",cons:"暗箱操作、拉帮结派",changes:[1,49,30,14,55,37]},
+{name:"大有",upper:3,lower:1,wx:"火金",fw:"南西北",xiang:"火天",ausp:"大吉",ci:"元亨。",jie:"至为亨通，诸事大有所获。刚健文明，柔顺得中，大吉之卦。",lq6:["父母爻（收获圆满）","父母爻（大有尊位）","官鬼爻（成功标志）","兄弟爻（大有小波折）","妻财爻（核心盈利）","子孙爻（创业元勋）"],syyx:"世五应二。柔得尊位，诸阳响应。刚而能柔，大有成就。",syy:"火天大有，诸事大有所获。世爻在五爻（核心），应爻在二爻（资源位）。此卦为大吉之象！刚健文明、柔顺得中，事业巅峰之兆。但须注意大有转睽，在巅峰时保持谦和尤为关键。",pros:"事业巅峰、投资回报、项目成功",cons:"高杠杆投机、内部动荡",changes:[1,38,18,1,51,35]},
+{name:"谦",upper:8,lower:7,wx:"土土",fw:"西南东北",xiang:"地山",ausp:"吉",ci:"亨，君子有终。",jie:"谦逊待人，诸事亨通。君子能始终保持谦逊，必得善终。",lq6:["父母爻（名声远扬）","父母爻（谦德服众）","官鬼爻（以退为进）","兄弟爻（过谦招疑）","妻财爻（谦而得誉）","子孙爻（谦之初得）"],syyx:"世三应上。山在地下，谦德内蕴。谦卦六爻皆吉，诸事以谦受益。",syy:"地山谦，谦逊待人，诸事亨通。世爻在三爻（众人位），应爻在上爻（外在名声）。这是大王一季度最重要的卦象之一！谦卦是64卦中极为罕见的大吉之卦——六爻皆吉。核心要义：谦逊蓄力，暗中进取。低调不树敌，反而能获得上级资源支持，终得善终。",pros:"职场晋升、合作谈判、人际交往、团队管理",cons:"争名夺利、锋芒毕露、盛气凌人",changes:[52,39,2,46,11,36]},
+{name:"豫",upper:4,lower:8,wx:"木土",fw:"东西南",xiang:"雷地",ausp:"平",ci:"利建侯行师。",jie:"欢乐和悦，有利于封侯建国、行军打仗。顺应天时而动，众心归附。",lq6:["父母爻（乐极生变）","父母爻（居安思危）","官鬼爻（豫卦核心）","兄弟爻（沉溺娱乐）","妻财爻（乐中有得）","兄弟爻（乐极生悲）"],syyx:"世五应三。豫悦之道，豫宜防乐极生悲，沉溺安逸。",syy:"雷地豫，欢乐和悦，顺应天时。世爻在五爻（决策核心），应爻在三爻（众人参与位）。顺应天时而动、众心归附则吉，但须警惕成功后沉溺安逸。欢乐有节，方能长久。",pros:"娱乐休闲、团队凝聚、节庆活动",cons:"严肃决策、风险投资",changes:[2,33,35,9,16,51]},
+{name:"随",upper:2,lower:4,wx:"金木",fw:"西东",xiang:"泽雷",ausp:"吉",ci:"元亨利贞，无咎。",jie:"随从之卦，大通顺正。追随正道则无咎。追随明主，可成大业。",lq6:["父母爻（追随到底）","父母爻（随从尊主）","官鬼爻（明主得人）","兄弟爻（随而有争）","妻财爻（随而得利）","子孙爻（积极追随）"],syyx:"世三应上。泽雷相随，刚下柔上。追随明智，择主而事则吉。",syy:"泽雷随，随从之卦，大通顺正。世爻在三爻（众人位），应爻在上爻（外在影响）。一季度此卦提示：追随明智者、择主而事、随正道则无咎。若有强势合作伙伴或可依靠的领导，随从借力往往比自己单干更有效。",pros:"跟随合作、职场选择、团队归属",cons:"独立创业、盲目跟随",changes:[51,3,11,58,25,49]},
+{name:"蛊",upper:7,lower:5,wx:"土木",fw:"东北东南",xiang:"山风",ausp:"吉",ci:"元亨，利涉大川，先甲三日，后甲三日。",jie:"除弊革新，大通顺正。利于涉越大川。革新须有充分准备，三思而后行。",lq6:["父母爻（传承延续）","父母爻（革新领袖）","官鬼爻（保守势力）","兄弟爻（蛊中相争）","妻财爻（母位干蛊）","子孙爻（革新萌芽）"],syyx:"世四应初。蛊乱积弊，振疲起衰。治蛊者须刚健有为，以雷霆之势除旧布新。",syy:"山风蛊，除弊革新，大通顺正。世爻在四爻（接近核心），应爻在初爻（事情萌芽）。一季度若遇此卦，说明前期积累了一些问题（蛊象），此时是解决问题的窗口期。以雷霆手段除旧布新，革新须充分准备、三思而后行。",pros:"公司改革、整顿改革、制度重塑",cons:"维持现状、渐进改良",changes:[57,50,56,46,48,18]},
+{name:"临",upper:8,lower:2,wx:"土金",fw:"西南西",xiang:"地泽",ausp:"吉",ci:"元亨利贞，至于八月有凶。",jie:"以上临下，大通顺正。君子以德临人，可致亨通。但盛极转衰，须防凶。",lq6:["父母爻（过当）","父母爻（最高领导）","官鬼爻（近君之臣）","兄弟爻（督导过度）","妻财爻（临而得众）","子孙爻（亲临基层）"],syyx:"世四应初。君临天下，大有收获。临贵在亲临，以德感人。",syy:"地泽临，以上临下，大通顺正。世爻在四爻（接近核心），应爻在初爻（基层/萌芽）。一季度此卦提示：深入一线、亲临督导、以德服人则诸事顺遂。切忌远程遥控、脱离基层。",pros:"领导督导、实地考察、客户拜访",cons:"远程遥控、脱离基层",changes:[58,1,21,11,34,20]},
+{name:"观",upper:5,lower:8,wx:"木土",fw:"东南西南",xiang:"风地",ausp:"平",ci:"盥而不荐，有孚颙若。",jie:"观仰祭祀，心诚则灵。观察天下，当以诚待人，以德服人。",lq6:["父母爻（观其终极）","父母爻（观察学习）","官鬼爻（仕途观察）","兄弟爻（徘徊不定）","妻财爻（暗中观察）","子孙爻（初步观望）"],syyx:"世四应初。四阴上长，君子在野。观民设教，以德行为观。",syy:"风地观，观仰祭祀，心诚则灵。世爻在四爻（接近核心），应爻在初爻（基层/起步）。一季度此卦提示：观察为上，行动宜缓。深入市场调研、细致评估后再做决策，比仓促出手胜算更大。",pros:"市场调研、项目评估、人事考察",cons:"快速决策、立即行动",changes:[2,53,35,45,12,11]},
+{name:"噬嗑",upper:3,lower:4,wx:"火木",fw:"南东",xiang:"火雷",ausp:"平",ci:"亨，利用狱。",jie:"牙齿咬合，方能亨通。利于明辨是非，审理刑狱。",lq6:["父母爻（刑满释放）","父母爻（判决公正）","官鬼爻（核心矛盾）","兄弟爻（硬物难咬）","妻财爻（小小阻隔）","兄弟爻（小事纠纷）"],syyx:"世五应上。颐中有物，必须咬断。明断是非，雷电交加。",syy:"火雷噬嗑，牙齿咬合，方能亨通。世爻在五爻（决策核心），应爻在上爻（最终结局）。一季度此卦提示：有障碍必须清除，有矛盾必须解决，不可回避。咬断障碍则诸事亨通；回避问题，小问题会积累成大麻烦。",pros:"法律诉讼、纠纷调解、障碍清除",cons:"商业合作初期、内部和谐",changes:[51,3,27,35,30,27]},
+{name:"贲",upper:7,lower:3,wx:"土火",fw:"东北南",xiang:"山火",ausp:"平",ci:"亨，小利有攸往。",jie:"文饰美化，亨通顺遂。小有利益可图，不宜大动。",lq6:["父母爻（返璞归真）","父母爻（文明盛世）","官鬼爻（美化转变）","兄弟爻（文过其实）","妻财爻（内在修养）","兄弟爻（文饰表面）"],syyx:"世四应初。文明以止，华丽而不过。贲宜适度，本色最美。",syy:"山火贲，文饰美化，亨通顺遂。世爻在四爻（接近核心），应爻在初爻（基础/本色）。一季度此卦提示：形象包装、品牌美化能带来一定收益，但不可华而不实。适度包装+实力内核，才能真正赢得认可。",pros:"形象包装、品牌设计、营销推广",cons:"过分包装、弄虚作假",changes:[30,26,27,41,22,52]},
+{name:"剥",upper:7,lower:8,wx:"土土",fw:"东北西南",xiang:"山地",ausp:"大凶",ci:"不利有攸往。",jie:"群阴剥阳，诸事不利。阴长阳消，小人得势，君子宜守不宜动。",lq6:["父母爻（大厦将倾）","父母爻（领导危机）","官鬼爻（职位不稳）","兄弟爻（暗中破坏）","父母爻（持续削弱）","父母爻（基础被蚀）"],syyx:"世上应三。群阴剥阳，小人道长。剥宜守正，勿与小人争。",syy:"山地剥，群阴剥阳，诸事不利。世爻在上爻（外在压力），应爻在三爻（众人位）。一季度若遇此卦，说明大环境极度不利，阴盛阳衰。此时唯一正确策略：收缩防守、保存实力、绝不冒进。等待五阳来复（转机）再行动。",pros:"蛰伏防守、保存实力、收缩战线",cons:"进攻扩张、新项目启动、公开竞争",changes:[2,52,35,20,11,24]},
+{name:"复",upper:8,lower:4,wx:"土木",fw:"西南东",xiang:"地雷",ausp:"大吉",ci:"亨，出入无疾，朋来无咎，反复其道，七日来复。",jie:"一阳来复，亨通无阻。出入平安，友人相助。正道反复，短期可回归。",lq6:["父母爻（反复风险）","父母爻（领导回归）","官鬼爻（职位变动）","兄弟爻（反复不前）","妻财爻（稳健收益）","子孙爻（复元之本）"],syyx:"世三应上。一阳来复，万象更新。复卦是64卦中最重要的转折卦之一。",syy:"地雷复，一阳来复，亨通无阻。世爻在三爻（众人位），应爻在上爻（外在影响）。此卦为一季度最重要的大吉转折卦！前期的低谷或挫折正在过去，新的机遇和能量正在萌芽。此刻是重新出发、乘胜追击的最佳时机。",pros:"低谷反弹、疾病康复、项目重启、错误改正",cons:"继续下滑、放弃希望",changes:[51,3,2,27,24,2]},
+{name:"无妄",upper:1,lower:4,wx:"金木",fw:"西北东",xiang:"天雷",ausp:"吉",ci:"元亨利贞，其匪正有眚，不利有攸往。",jie:"纯正无妄，大通顺正。若不守正则有灾祸，不宜远行。",lq6:["父母爻（意外结局）","父母爻（领导纯正）","官鬼爻（意外机遇）","兄弟爻（意外之祸）","妻财爻（正当收益）","子孙爻（动机纯正）"],syyx:"世五应初。刚自外来而为主于内。纯正无妄，不妄为则大亨。",syy:"天雷无妄，纯正无妄，大通顺正。世爻在五爻（核心），应爻在初爻（起点）。一季度此卦提示：诚信为本，不走捷径。投机取巧、欺骗隐瞒虽有短期利益，终会招致灾祸。正道直行，虽远必至。",pros:"诚信交易、正当竞争、规范管理",cons:"投机取巧、欺骗隐瞒",changes:[51,1,12,21,25,17]},
+{name:"大畜",upper:7,lower:1,wx:"土金",fw:"东北西北",xiang:"山天",ausp:"吉",ci:"利贞，不家食吉，利涉大川。",jie:"大的积蓄，宜守正道。不食于家则吉，利于涉越大川。",lq6:["父母爻（止而不止）","父母爻（储备充足）","官鬼爻（门槛突破）","兄弟爻（过度积蓄）","妻财爻（稳健积累）","兄弟爻（积蓄阶段）"],syyx:"世四应五。畜德积学，以刚止健。畜宜有度，过畜则滞。",syy:"山天大畜，大的积蓄，宜守正道。世爻在四爻（接近核心），应爻在五爻（核心）。一季度此卦提示：厚积薄发。知识积累、人才培养、资源储备是当前最重要的事情。积累充足后再出手，方能一击必中。",pros:"知识积累、财富储蓄、人才储备",cons:"过度节俭吝啬、拒绝分享",changes:[1,5,11,14,27,26]},
+{name:"颐",upper:7,lower:4,wx:"土木",fw:"东北东",xiang:"山雷",ausp:"吉",ci:"贞吉，观颐，自求口实。",jie:"颐养正则吉。观察颐养之道，当自食其力，不依赖他人。",lq6:["父母爻（依赖失养）","父母爻（君主之养）","官鬼爻（用人颐养）","兄弟爻（饮食失节）","妻财爻（正当饮食）","子孙爻（自食其力）"],syyx:"世五应上。颐养之道，贵在自养正则吉；依赖他人则有凶。",syy:"山雷颐，颐养正则吉，自食其力方得真知。世爻在五爻（核心），应爻在上爻（外在影响）。一季度此卦提示：自立自强是根本。依赖外部资源或许能撑一时，但唯有自身实力增长才是长久之计。",pros:"身体健康、财务自足、人才培养",cons:"依赖他人、不劳而获",changes:[21,3,23,26,27,23]},
+{name:"大过",upper:2,lower:5,wx:"金木",fw:"西东南",xiang:"泽风",ausp:"小凶",ci:"栋桡，利有攸往，亨。",jie:"栋梁弯曲，承受压力。利于有所前往，中途有险但终可通达。",lq6:["父母爻（事后平安）","父母爻（承受重压）","官鬼爻（重大决策）","兄弟爻（中段危机）","妻财爻（刚柔失衡）","子孙爻（起步过刚）"],syyx:"世五应上。阴阳失衡，大的考验。栋桡之象，承受压力但终能亨通。",syy:"泽风大过，栋梁弯曲，承受压力。世爻在五爻（核心），应爻在上爻（最终结局）。一季度若遭遇此卦，说明面临重大考验，压力不小。但此卦也预示：承受压力、咬牙坚持，中途虽有险但终可通达。关键在于不要独自硬撑。",pros:"危机处理、极限挑战、重大变故",cons:"按部就班、保守稳妥",changes:[57,43,31,44,28,47]},
+{name:"坎",upper:6,lower:6,wx:"水",fw:"北",xiang:"水",ausp:"小凶",ci:"有孚，维心亨，行有尚。",jie:"重重险难，心怀诚信，意志坚定则可亨通。行动有功。",lq6:["父母爻（上六危险）","父母爻（中心领导）","官鬼爻（有限空间）","兄弟爻（多险叠加）","妻财爻（险中有得）","兄弟爻（底层风险）"],syyx:"世二应五。重重险难，心诚则亨。习坎之卦，有孚维心。",syy:"坎为水，重重险难，心怀诚信则亨通。世爻在二爻（资源/执行位），应爻在五爻（核心决策）。一季度若遇此卦，需警惕多重风险叠加。此时策略：不主动涉险，坚守正道，广结善缘。心诚则亨，意志坚定者可化险为夷。",pros:"险中求存、困境突围、危机公关",cons:"常规决策、小风险行动",changes:[48,5,2,6,29,47]},
+{name:"离",upper:3,lower:3,wx:"火",fw:"南",xiang:"火",ausp:"吉",ci:"利贞，亨，畜牝牛吉。",jie:"光明照耀，亨通顺正。宜养柔顺之德，则吉。",lq6:["父母爻（盛极必衰）","父母爻（光明照耀）","官鬼爻（职业光明）","兄弟爻（光辉外露）","妻财爻（以柔居中）","子孙爻（初现光明）"],syyx:"世三应上。光明重叠，文明柔顺。离卦须柔中守正，过于刚烈则有凶。",syy:"离为火，光明照耀，亨通顺正。世爻在三爻（众人位），应爻在上爻（外在名声）。一季度此卦提示：光明磊落、以柔养德。文化教育、品牌公关、媒体传播等行业特别有利。但火性过烈则凶，需保持柔顺之德。",pros:"文化教育、品牌公关、媒体传播",cons:"阴暗操作、内斗倾轧",changes:[21,14,56,35,30,38]},
+{name:"咸",upper:2,lower:7,wx:"金土",fw:"西东北",xiang:"泽山",ausp:"吉",ci:"亨利贞，取女吉。",jie:"感应相吸，亨通顺正。少男少女相互感应，情投意合。",lq6:["父母爻（情感归宿）","父母爻（婚姻大事）","官鬼爻（决定时刻）","兄弟爻（犹豫不决）","妻财爻（感情发展）","子孙爻（心动的开始）"],syyx:"世三应上。少男在下，少女在上，阴阳感应。咸者，感也。",syy:"泽山咸，感应相吸，亨通顺正。世爻在三爻（众人位），应爻在上爻（外在影响）。一季度此卦提示：感应为贵，人际是关键。无论是业务合作还是职场发展，与人建立真诚感应往往比硬实力更能决定成败。",pros:"恋爱婚姻、人际感应、商务感应",cons:"单相思无回应、强迫他人",changes:[52,33,2,44,31,39]},
+{name:"恒",upper:4,lower:5,wx:"木木",fw:"东东南",xiang:"雷风",ausp:"吉",ci:"亨，无咎，利贞，利有攸往。",jie:"恒久之道，亨通无咎。守正则利，有利于有所前往。",lq6:["父母爻（恒久必变）","父母爻（长久基业）","官鬼爻（职业稳定）","兄弟爻（缺乏恒心）","妻财爻（持之以恒）","兄弟爻（恒心起点）"],syyx:"世三应上。雷风相与，恒久之道。恒贵有常，但恒久不变则穷。",syy:"雷风恒，恒久之道，亨通无咎。世爻在三爻（众人位），应爻在上爻（外在影响）。一季度此卦提示：坚持就是胜利。认准方向后持之以恒，不因短期波动而动摇。但恒久不变亦有穷时，若方向错误则越坚持越糟糕。",pros:"婚姻长久、职业稳定、长期投资",cons:"短期投机、频繁变换",changes:[57,34,2,35,32,33]},
+{name:"遁",upper:1,lower:7,wx:"金土",fw:"西北东北",xiang:"天山",ausp:"平",ci:"亨，小利贞。",jie:"退避蛰伏，亨通顺正。小有利益可图，宜守正退避。",lq6:["父母爻（完全隐退）","父母爻（功成身退）","官鬼爻（决定去留）","兄弟爻（退而不决）","妻财爻（退中获利）","兄弟爻（退隐萌芽）"],syyx:"世二应五。天下有山，君子远遁。小人渐盛，君子宜退。",syy:"天山遁，退避蛰伏，亨通顺正。世爻在二爻（资源位），应爻在五爻（核心）。一季度若遇此卦，提示：战略撤退也是智慧。当外部压力过大时，战略性收缩比硬碰硬更明智。保存实力、等待时机，是遁卦的精髓。",pros:"战略收缩、保存实力、急流勇退",cons:"逆境冒进、强行出头",changes:[31,1,56,44,33,12]},
+{name:"大壮",upper:4,lower:1,wx:"木金",fw:"东西北",xiang:"雷天",ausp:"吉",ci:"利贞。",jie:"壮大强盛，宜守正道。壮而不过，方能保持优势。",lq6:["父母爻（壮极而衰）","父母爻（领导实力）","官鬼爻（突破关卡）","兄弟爻（壮而过刚）","妻财爻（正当收益）","兄弟爻（实力积聚）"],syyx:"世四应初。雷在天上，声势浩大。壮贵有礼，过刚则凶。",syy:"雷天大壮，壮大强盛，宜守正道。世爻在四爻（接近核心），应爻在初爻（起步）。一季度此卦提示：实力壮大，正当其时。自身力量处于上升期，可适度扩张、积极竞争。但壮而失礼则转为凶兆。",pros:"实力壮大、市场扩张、竞技比赛",cons:"过度扩张、恃强凌弱",changes:[43,5,11,14,51,33]},
+{name:"晋",upper:3,lower:8,wx:"火土",fw:"南西南",xiang:"火地",ausp:"吉",ci:"康侯用锡马蕃庶，昼日三接。",jie:"晋升发达，受到赏赐。光明磊落，众阴顺承，必得重用。",lq6:["父母爻（功成名就）","父母爻（最高领导）","官鬼爻（职场升迁）","兄弟爻（功高震主）","妻财爻（晋升获利）","兄弟爻（基层晋升）"],syyx:"世四应初。晋者，进也。日出地上，光明磊落，众阴顺承。",syy:"火地晋，晋升发达，受到赏赐。世爻在四爻（接近核心），应爻在初爻（基层/起步）。一季度此卦为事业晋升之兆！光明磊落、众阴顺承，必得重用。但需警惕功高震主，低调配合方能长保晋升势头。",pros:"仕途升迁、考试晋级、项目获批",cons:"激进冒进、与人交恶",changes:[23,56,21,12,35,20]},
+{name:"明夷",upper:8,lower:3,wx:"土火",fw:"西南南",xiang:"地火",ausp:"小凶",ci:"利艰贞。",jie:"光明受伤，宜在艰难中守正。韬光养晦，等待时机。",lq6:["父母爻（最终胜出）","父母爻（核心受伤）","官鬼爻（职位受压）","兄弟爻（坚守正道）","妻财爻（暗中获利）","兄弟爻（光明初伤）"],syyx:"世三应上。日入地中，明者受屈。君子利艰贞，隐忍待时。",syy:"地火明夷，光明受伤，宜在艰难中守正。世爻在三爻（众人位），应爻在上爻（外在名声）。一季度若遭遇此卦，提示：韬光养晦是上策。外部环境对部门或个人不利（政策收紧、领导压制等），以退为进，暗中积累。公开对抗必败无疑。",pros:"低谷蛰伏、职场打压、暗中积累",cons:"公开对抗、高调反击",changes:[15,11,24,35,36,19]},
+{name:"家人",upper:5,lower:3,wx:"木火",fw:"东南南",xiang:"风火",ausp:"吉",ci:"利女贞。",jie:"家庭之卦，宜女子守正。家庭和睦，风自火出。",lq6:["父母爻（家道传承）","父母爻（核心长辈）","官鬼爻（家庭支柱）","兄弟爻（家庭纷争）","妻财爻（主妇之位）","子孙爻（子女诞生）"],syyx:"世五应上。女正位乎内，男正位乎外。家庭伦理，各正其位。",syy:"风火家人，家庭和睦，风自火出。世爻在五爻（核心），应爻在上爻（外在影响）。一季度此卦提示：家和万事兴。无论是部门内部（团队和睦）还是外部（合作关系），和谐融洽是取得佳绩的基础。",pros:"家庭和睦、婚姻感情、家业经营",cons:"外部冒险、内部矛盾激化",changes:[13,50,42,9,37,53]},
+{name:"睚",upper:3,lower:2,wx:"火金",fw:"南北西",xiang:"火泽",ausp:"平",ci:"小事吉。",jie:"乖违睽隔，小事可成，大事则凶。求同存异，小处着手。",lq6:["父母爻（睽极而合）","父母爻（大睽大合）","官鬼爻（化睽为合）","兄弟爻（矛盾激化）","妻财爻（对立中合作）","兄弟爻（乖离之始）"],syyx:"世四应上。火动而上，泽动而下，二女同居，其志不同行。",syy:"火泽睽，乖违睽隔，小事可成。世爻在四爻（接近核心），应爻在上爻（外在影响）。一季度此卦提示：求同存异，小处着手。与竞争对手存在分歧时，不要试图一步到位解决所有矛盾。从小处着手、逐步化解，反而更有效。",pros:"人际分歧、意见不合、小额交易",cons:"大型合作、重要决策合一",changes:[58,14,39,35,38,64]},
+{name:"蹇",upper:6,lower:7,wx:"水土",fw:"北东北",xiang:"水山",ausp:"小凶",ci:"利西南，不利东北，利见大人，贞吉。",jie:"前有险阻，后有高山。宜往西南，不宜往东北。利于见大人，守正则吉。",lq6:["父母爻（出蹇有望）","父母爻（领袖相助）","官鬼爻（关键人物）","兄弟爻（危难边缘）","妻财爻（得援手）","兄弟爻（起步即难）"],syyx:"世四应三。前有险，后有山。诸事蹇难，见大人才有救。",syy:"水山蹇，前有险阻，后有高山。世爻在四爻（接近核心），应爻在三爻（众人位）。一季度若遭遇此卦，说明当前面临较大困难（竞争对手强势、资源不足等）。此时策略：求助于上级/关键人物，独自硬闯往往失败。",pros:"困境突围、逆境求援、危机处理",cons:"贸然行动、单独冒进",changes:[53,5,21,48,39,52]},
+{name:"解",upper:4,lower:6,wx:"木水",fw:"东北北",xiang:"雷水",ausp:"吉",ci:"利西南，无攸往，其来复吉，有攸往，夙吉。",jie:"解除困难。返回原地则吉，行动则宜早不宜迟。",lq6:["父母爻（问题终结）","父母爻（圆满解决）","官鬼爻（彻底解决）","兄弟爻（遗留问题）","妻财爻（解决获利）","子孙爻（解除萌芽）"],syyx:"世三应上。雷雨大作，百果草木皆甲坼。困难解除之卦。",syy:"雷水解，解除困难，亨通无阻。世爻在三爻（众人位），应爻在上爻（外在结局）。一季度此卦为困境解除、否极泰来之兆！前期的困难、纠纷、障碍正在化解，此刻是行动的最佳窗口。宜早不宜迟，拖延则生变。",pros:"纠纷解决、危机解除、矛盾调和",cons:"制造新问题、旧事重提",changes:[29,5,2,16,40,64]},
+{name:"损",upper:7,lower:2,wx:"土金",fw:"东北西",xiang:"山泽",ausp:"吉",ci:"元吉，无咎，可贞，利有攸往。",jie:"减损之道，大吉无咎。守正则利。损下益上，其道上行。",lq6:["父母爻（损极反益）","父母爻（以损养德）","官鬼爻（职位调整）","兄弟爻（共同减损）","妻财爻（适度减损）","子孙爻（主动减损）"],syyx:"世四应初。损下益上，损己益人。损贵在诚信适度。",syy:"山泽损，减损之道，大吉无咎。世爻在四爻（接近核心），应爻在初爻（起步/基础）。一季度此卦提示：适度让利是智慧。主动吃点小亏，往往能换取更大的合作空间或上级支持。但过度的自我牺牲反而会带来反效果。",pros:"适度让利、谈判妥协、主动示弱",cons:"过度减损、自我牺牲",changes:[58,26,11,4,41,42]},
+{name:"益",upper:5,lower:4,wx:"木木",fw:"东南东",xiang:"风雷",ausp:"大吉",ci:"利有攸往，利涉大川。",jie:"增益之卦，利于有所前往，有利于涉越大川。损上益下，天下悦服。",lq6:["父母爻（益极有损）","父母爻（最高施益）","官鬼爻（政策益民）","兄弟爻（因益致损）","妻财爻（稳健受益）","子孙爻（基层增益）"],syyx:"世三应上。损上益下，风雷相益。益贵在惠民，益民则天下悦。",syy:"风雷益，增益之卦，诸事大吉。世爻在三爻（众人位），应爻在上爻（外在影响）。一季度此卦为大吉之兆！政策利好、投资增益、技能提升、人脉拓展等各方面均有收获。但益极有损，须适可而止。",pros:"政策利好、投资增益、技能提升",cons:"贪得无厌、过度索取",changes:[27,3,21,20,42,43]},
+{name:"夬",upper:2,lower:1,wx:"金金",fw:"西西北",xiang:"泽天",ausp:"吉",ci:"扬于王庭，孚号有厉，告自邑，不利即戎，利有攸往。",jie:"决断果敢，光明正大。号令天下，小心危险。宜文德不宜武力。",lq6:["父母爻（彻底解决）","父母爻（决断英明）","官鬼爻（决定成败）","兄弟爻（刚愎自用）","妻财爻（果断获利）","兄弟爻（决断萌芽）"],syyx:"世五应初。五阳决一阴，果决行动，但需防小反扑。",syy:"泽天夬，决断果敢，光明正大。世爻在五爻（核心），应爻在初爻（起步/萌芽）。一季度此卦提示：果断清理门户/风险出清。当断不断反受其乱——清除阻碍、解决矛盾需要果敢行动。但需防备残余势力的反扑。",pros:"果断决策、清理门户、风险出清",cons:"犹豫不决、反复无常",changes:[1,14,11,5,43,1]},
+{name:"姤",upper:1,lower:5,wx:"金木",fw:"西北东南",xiang:"天风",ausp:"平",ci:"女壮，勿用取女。",jie:"一阴遇五阳，阴气始生。女子过壮，不宜娶之。邂逅相遇，不可长久。",lq6:["父母爻（短暂邂逅）","父母爻（意外缘分）","官鬼爻（意外邂逅）","兄弟爻（三角关系）","父母爻（邂逅相遇）","父母爻（阴气始生）"],syyx:"世五应初。天下有风，阴阳相遇。阴生之时，谨防暗害。",syy:"天风姤，一阴遇五阳，邂逅相遇。世爻在五爻（核心），应爻在初爻（起步）。一季度此卦提示：意外相遇、临时合作。可能有偶发的合作机会或意外的人员加入。这类关系往往难以长久，应以开放心态把握，但不要押注太重。",pros:"意外邂逅、临时合作、偶发事件",cons:"长久关系、严肃承诺",changes:[57,1,20,28,44,33]},
+{name:"萃",upper:2,lower:8,wx:"金土",fw:"西西南",xiang:"泽地",ausp:"吉",ci:"亨利贞，用大牲吉，利有攸往。",jie:"聚集相会，亨通顺正。用大礼祭祀则吉，利于有所前往。",lq6:["父母爻（相聚顶峰）","父母爻（众望所归）","官鬼爻（聚集核心）","兄弟爻（聚而不正）","妻财爻（相聚获利）","兄弟爻（聚而未合）"],syyx:"世四应初。地上有泽，人心相萃。聚集之道，诚信则吉。",syy:"泽地萃，聚集相会，亨通顺正。世爻在四爻（接近核心），应爻在初爻（起步）。一季度此卦提示：人才聚集、会议论坛是重要节点。多参加会议、团队活动，有利于扩大影响、招揽人才、建立同盟。真诚聚集则吉。",pros:"人才聚集、会议论坛、众筹合伙",cons:"离散分居、内部争斗",changes:[2,11,35,12,45,15]},
+{name:"升",upper:8,lower:5,wx:"土木",fw:"西南东南",xiang:"地风",ausp:"吉",ci:"元亨，用见大人，勿恤，南征吉。",jie:"上升发展，大亨通。有利于拜见大人，不必忧虑。往南方发展则吉。",lq6:["父母爻（升无可升）","父母爻（步步高升）","官鬼爻（职位晋升）","兄弟爻（上升受阻）","妻财爻（上升获利）","子孙爻（稳步上升）"],syyx:"世三应上。地中生木，步步高升。上升发展，积小成大。",syy:"地风升，上升发展，大亨通。世爻在三爻（众人位），应爻在上爻（外在名声）。一季度此卦为仕途升迁、地位提升之兆！顺风而起、步步高升，往南方发展则更吉。积小成大，不可急躁冒进。",pros:"仕途升迁、职位晋升、学业进步",cons:"降职调离、退步堕落",changes:[11,18,35,20,46,2]},
+{name:"困",upper:2,lower:6,wx:"金水",fw:"西北北",xiang:"泽水",ausp:"小凶",ci:"亨贞，大人吉，无咎，有言不信。",jie:"陷入困境，但亨通守正。困厄之时，言而无信。",lq6:["父母爻（困极将解）","父母爻（领导受困）","官鬼爻（职位困顿）","兄弟爻（进退两难）","妻财爻（经济困难）","兄弟爻（初陷困境）"],syyx:"世三应上。泽中无水，困穷无援。困者，人穷志短，守正则亨。",syy:"泽水困，陷入困境，但亨通守正。世爻在三爻（众人位），应爻在上爻（外在名声）。一季度若遭遇此卦，说明当前处于经济或资源困境。在困境中保持诚信和意志坚定，不轻举妄动，反而是脱困的正确方式。",pros:"经济困境、事业瓶颈、人才流失",cons:"轻举妄动、过度承诺",changes:[29,5,2,6,47,45]},
+{name:"井",upper:6,lower:5,wx:"水木",fw:"北东南",xiang:"水风",ausp:"吉",ci:"改邑不改井，无丧无得，往来井井。",jie:"城邑可改，井不可改。井水不变，取用无穷。",lq6:["父母爻（基础设施）","父母爻（养育之恩）","官鬼爻（制度变革）","兄弟爻（资源枯竭）","妻财爻（井水受污）","兄弟爻（水源充足）"],syyx:"世四应五。木上有水，井养无穷。井不可改，为人不可忘本。",syy:"水风井，城邑可改，井不可改。世爻在四爻（接近核心），应爻在五爻（核心）。一季度此卦提示：制度建设、人才培养是根本。好的制度/团队如同水源，取用无穷；破坏传统/竭泽而渔则凶。",pros:"制度建设、人才培养、公共服务",cons:"破坏传统、竭泽而渔",changes:[57,5,21,18,48,57]},
+{name:"革",upper:2,lower:3,wx:"金火",fw:"西南南",xiang:"泽火",ausp:"吉",ci:"巳日乃孚，元亨利贞，悔亡。",jie:"变革之卦，巳日（时机成熟）建立威信。大通顺正，悔恨消除。",lq6:["父母爻（改革完成）","父母爻（领导推动）","官鬼爻（决定成败）","兄弟爻（变革阻力）","妻财爻（改革红利）","子孙爻（变革萌芽）"],syyx:"世四应初。泽火相灭，改革之象。变革须顺天应人，时未至则凶。",syy:"泽火革，巳日乃孚，悔亡。世爻在四爻（接近核心），应爻在初爻（起步）。一季度此卦提示：变革时机很重要。改革有风险，但不改也有风险。关键在于时机——时机成熟则大胆推进，时机未到则耐心等待。",pros:"体制改革、制度变革、技术革新",cons:"保守维持、时机未到",changes:[13,43,2,50,49,44]},
+{name:"鼎",upper:3,lower:5,wx:"火木",fw:"南东南",xiang:"火风",ausp:"吉",ci:"元吉，亨。",jie:"烹饪成新，养贤育才。鼎者，定也，国之重器。",lq6:["父母爻（功成名就）","父母爻（正中领导）","官鬼爻（核心变革）","兄弟爻（团队分裂）","妻财爻（实质性成果）","子孙爻（创新之基）"],syyx:"世五应上。鼎者，烹饪成新，定国家之位。君子以正位凝命。",syy:"火风鼎，烹饪成新，养贤育才。世爻在五爻（核心），应爻在上爻（外在名声）。一季度此卦为创业立新、定鼎之象！新的制度、团队、方向正在确立，关键岗位的人选至关重要。招揽人才、建立制度是当前要务。",pros:"创业立新、制度确立、人才引进",cons:"破坏旧制、颠覆权威",changes:[18,56,35,48,50,44]},
+{name:"震",upper:4,lower:4,wx:"木",fw:"东",xiang:"雷",ausp:"平",ci:"亨，震来虩虩，笑言哑哑，震惊百里，不丧匕鬯。",jie:"亨通。震惊来时有恐惧，笑语如常。震惊百里，不失匕鬯（从容镇定）。",lq6:["父母爻（震动尾声）","父母爻（领袖镇定）","官鬼爻（平息危机）","兄弟爻（连续震动）","妻财爻（危中有机）","兄弟爻（突发危机）"],syyx:"世四应初。震惊百里，戒惧恐惧。临变不惊，方能亨通。",syy:"震为雷，震惊百里，亨通。世爻在四爻（接近核心），应爻在初爻（起步）。一季度此卦提示：突发事件是考验。可能有意想不到的冲击（市场变化、政策调整等），关键在于保持镇定、笑言哑哑（从容应对）。惊慌失措者必败，临变不惊者亨通。",pros:"突发危机、紧急行动、市场震荡",cons:"按部就班、毫无准备",changes:[16,21,24,46,51,52]},
+{name:"艮",upper:7,lower:7,wx:"土",fw:"东北",xiang:"山",ausp:"平",ci:"艮其背，不获其身，行其庭，不见其人，无咎。",jie:"停止在背部，身体无法前行。适时停止则无咎。",lq6:["父母爻（停止顶峰）","父母爻（核心稳固）","官鬼爻（岗位调整）","兄弟爻（止而不前）","父母爻（当止则止）","父母爻（止于根基）"],syyx:"世五应二。兼山重叠，适时而止。艮贵知止，当行则行，当止则止。",syy:"艮为山，适时停止则无咎。世爻在五爻（核心），应爻在二爻（执行位）。一季度此卦提示：进退有度才是智慧。该出手时果断出手，该停手时及时停手。在竞争激烈的环境中，知道何时不进，比知道何时进更重要。",pros:"暂停决策、保持观望、稳健防守",cons:"冒进扩张、强行推进",changes:[23,22,56,53,52,15]},
+{name:"渐",upper:5,lower:7,wx:"木土",fw:"东南东北",xiang:"风山",ausp:"吉",ci:"女归吉，利贞。",jie:"如女子出嫁，循序渐进则吉。利于守正。",lq6:["父母爻（大功告成）","父母爻（圆满结局）","官鬼爻（职级调整）","兄弟爻（反复不前）","妻财爻（稳健获益）","子孙爻（起步稳定）"],syyx:"世四应初。山上有风，循序渐进。女归之象，嫁娶大吉。",syy:"风山渐，如女子出嫁，循序渐进则吉。世爻在四爻（接近核心），应爻在初爻（起步）。一季度此卦为渐进成功之兆！不求一步登天，但求稳步推进。积小胜为大胜，急功近利反而会打乱节奏。",pros:"婚恋嫁娶、学业渐进、职业发展",cons:"急功近利、一步登天",changes:[52,5,35,20,53,54]},
+{name:"归妹",upper:4,lower:2,wx:"木金",fw:"东西西",xiang:"雷泽",ausp:"小凶",ci:"征凶，无攸利。",jie:"行动有凶，无所利。少女从长男，不正当之婚，有失礼仪。",lq6:["父母爻（婚姻结局）","父母爻（婚事决定）","官鬼爻（嫁人抉择）","兄弟爻（婚事阻滞）","妻财爻（婚中获益）","兄弟爻（婚事萌芽）"],syyx:"世五应三。少女从长男，行动不正。归妹不宜妄动，守正则少凶。",syy:"雷泽归妹，行动有凶，无所利。世爻在五爻（核心），应爻在三爻（众人位）。一季度若遭遇此卦，提示：重大决策须谨慎。合作关系或项目推进中可能存在名不正言不顺的问题，不宜轻率行动。",pros:"婚恋感情、商业联姻、并购整合",cons:"轻率婚嫁、商业骗局",changes:[58,55,11,60,54,53]},
+{name:"丰",upper:4,lower:3,wx:"木火",fw:"东南南",xiang:"雷火",ausp:"大吉",ci:"亨，王假之，勿忧，宜日中。",jie:"盛大丰盈，亨通。君王至丰盛之道，勿须忧虑，宜如日在中天。",lq6:["父母爻（丰极则亏）","父母爻（丰盛顶峰）","官鬼爻（盛大转折）","兄弟爻（高处不胜寒）","妻财爻（盛大收益）","兄弟爻（事业起步）"],syyx:"世四应上。日中则昃，月盈则食。丰贵在中正，过丰则亏。",syy:"雷火丰，盛大丰盈，亨通。世爻在四爻（接近核心），应爻在上爻（外在名声）。一季度此卦为大吉事业巅峰之兆！业绩丰收、声名鹊起。但丰极则亏——在最高光时刻保持警觉，防止盛极转衰，是此卦最重要的警示。",pros:"事业高峰、业绩丰收、规模扩张",cons:"巅峰之后、盛极忘形",changes:[37,5,11,35,55,51]},
+{name:"旅",upper:7,lower:3,wx:"土火",fw:"东北南",xiang:"火山",ausp:"平",ci:"小亨，旅贞吉。",jie:"小有亨通，旅途守正则吉。羁旅在外，宜柔不宜刚。",lq6:["父母爻（终回故乡）","父母爻（他乡之贵）","官鬼爻（落脚之地）","兄弟爻（孤单旅途）","妻财爻（他乡遇故知）","兄弟爻（出门在外）"],syyx:"世四应初。山上有火，旅羁他乡。旅贵在柔顺得中，寄人篱下则吉。",syy:"火山旅，小有亨通，旅途守正则吉。世爻在四爻（接近核心），应爻在初爻（起步）。一季度此卦提示：外派、出差、异地发展方面有不错的机会。在外须保持柔顺，不宜过于刚强。低调行事，反而能获得帮助。",pros:"出差旅行、外派任职、海外发展",cons:"恋家思乡、当地纠纷",changes:[30,50,35,57,56,52]},
+{name:"巽",upper:5,lower:5,wx:"木",fw:"东南",xiang:"风",ausp:"平",ci:"小亨，利有攸往，利见大人。",jie:"小有亨通，利于有所前往。顺从而入，随风而行。",lq6:["父母爻（风过无痕）","父母爻（众顺所归）","官鬼爻（职位升迁）","兄弟爻（柔而不顺）","父母爻（柔顺行事）","父母爻（风之起点）"],syyx:"世四应初。风之入也，无所不入。巽贵在谦逊顺从，刚而过则为凶。",syy:"巽为风，小有亨通，顺从而入。世爻在四爻（接近核心），应爻在初爻（起步）。一季度此卦提示：柔性渗透是制胜之道。在竞争中以柔克刚、随风入隙，往往比正面硬刚更有效。但过于柔顺反而会被利用。",pros:"深入渗透、柔性管理、授权放权",cons:"强硬对抗、独断专行",changes:[44,9,37,42,57,18]},
+{name:"兑",upper:2,lower:2,wx:"金",fw:"西",xiang:"泽",ausp:"吉",ci:"亨，利贞。",jie:"亨通顺正，喜悦之和。言语悦人，人际和谐。",lq6:["父母爻（乐极生悲）","父母爻（众悦所归）","官鬼爻（职场合群）","兄弟爻（言多必失）","妻财爻（和悦获利）","子孙爻（喜悦之始）"],syyx:"世三应上。丽泽相与，喜悦和悦。兑贵真诚和悦，言过其实则有凶。",syy:"兑为泽，亨通顺正，喜悦之和。世爻在三爻（众人位），应爻在上爻（外在名声）。一季度此卦提示：人际和谐是资产。谈判协商、润滑关系、人际沟通是此时的强项。但言多必失——话说得太多反而会招来麻烦。",pros:"人际沟通、谈判协商、语言表达",cons:"轻信承诺、言过其实",changes:[43,5,11,49,58,47]},
+{name:"涣",upper:5,lower:6,wx:"木水",fw:"东南北",xiang:"风水",ausp:"平",ci:"王假有庙，利涉大川，利贞。",jie:"君王至庙祭祀，利于涉越大川，守正则利。风来水散，解散聚合。",lq6:["父母爻（散终有归）","父母爻（君王之力）","官鬼爻（重大决定）","兄弟爻（散中有聚）","妻财爻（分而获益）","兄弟爻（解散开始）"],syyx:"世四应三。风在水上，涣散聚合。涣贵在有所聚，散中有收。",syy:"风水涣，解散聚合，亨通守正。世爻在四爻（接近核心），应爻在三爻（众人位）。一季度此卦提示：化解矛盾、重组整合的时机。组织拆分、人才流动、资产重组方面有动作，关键在于散中有收，不是为了散而散。",pros:"化解矛盾、组织拆分、人才流动",cons:"巩固团结、紧密合作",changes:[29,5,61,20,59,57]},
+{name:"节",upper:6,lower:2,wx:"水金",fw:"北西",xiang:"水泽",ausp:"吉",ci:"亨，苦节不可贞。",jie:"亨通顺正，但过度节制则不可。节贵在适度，过节则凶。",lq6:["父母爻（节终通泰）","父母爻（领导节度）","官鬼爻（制度节度）","兄弟爻（节而无度）","妻财爻（节约获益）","兄弟爻（开始节制）"],syyx:"世五应二。水在泽上，节而有度。节贵适中，过节则凶。",syy:"水泽节，亨通顺正，但过度节制则不可。世爻在五爻（核心），应爻在二爻（执行位）。一季度此卦提示：预算管理、成本控制、制度规范是重点。但节贵在适度——过于苛刻的管控反而会激起反感和抵制。",pros:"财务预算、制度管理、时间管理",cons:"过度节俭、苛刻管理",changes:[58,5,21,19,60,29]},
+{name:"中孚",upper:5,lower:2,wx:"木金",fw:"东南西",xiang:"风泽",ausp:"吉",ci:"豚鱼吉，利涉大川，利贞。",jie:"诚信感通，连豚鱼也能感化则吉。利于涉越大川，守正则利。",lq6:["父母爻（诚信圆满）","父母爻（最高诚信）","官鬼爻（职位诚信）","兄弟爻（诚信被疑）","妻财爻（以诚获益）","子孙爻（诚信萌芽）"],syyx:"世四应上。风在泽上，诚信感通。中孚贵真诚无妄，豚鱼可感。",syy:"风泽中孚，诚信感通，连豚鱼也能感化则吉。世爻在四爻（接近核心），应爻在上爻（外在名声）。一季度此卦为诚信制胜之兆！在诚信交易、信用贷款等领域特别有利。真诚无妄是最强的竞争力，口是心非则是最大的风险。",pros:"诚信交易、信用贷款、合作协议",cons:"欺骗行为、口是心非",changes:[10,9,11,20,61,41]},
+{name:"小过",upper:4,lower:7,wx:"木土",fw:"东东北",xiang:"雷山",ausp:"平",ci:"亨，利贞，可小事，不可大事。",jie:"小有过越则可弥补。可以做小事，不可以做大事。",lq6:["父母爻（小过积累）","父母爻（领导小过）","官鬼爻（职位小过）","兄弟爻（小过转功）","父母爻（小过可补）","父母爻（小事之过）"],syyx:"世四应初。山上有雷，小有过越。小事可过，大事不可。",syy:"雷山小过，小有过越则可弥补。世爻在四爻（接近核心），应爻在初爻（起步）。一季度此卦提示：大事须坚守原则，小事可灵活变通。非核心事务上可以有弹性，但涉及根本原则的问题绝不能让步。",pros:"小事变通、轻微越权、弹性处理",cons:"大事决策、原则问题",changes:[52,16,35,15,62,55]},
+{name:"既济",upper:6,lower:3,wx:"水火",fw:"北南",xiang:"水火",ausp:"平",ci:"亨，小利贞，初吉终乱。",jie:"亨通顺正，小有利益。初期吉祥，最终混乱。既成之后，易生松懈。",lq6:["父母爻（物极必反）","父母爻（成就顶峰）","官鬼爻（维护稳定）","兄弟爻（小有波折）","妻财爻（经济平衡）","子孙爻（项目启动）"],syyx:"世三应上。水在火上，阴阳已交。既济之极，必生未济。",syy:"水火既济，亨通顺正，小有利益。世爻在三爻（众人位），应爻在上爻（外在名声）。一季度此卦提示：成功在望，但须防松懈。项目即将完成、目标即将达成，但初吉终乱是既济卦最大的陷阱。越是接近成功越要保持警惕。",pros:"项目完成、目标达成、成功在望",cons:"骄傲自满、不思进取",changes:[38,5,11,35,63,64]},
+{name:"未济",upper:3,lower:6,wx:"火水",fw:"南北",xiang:"火水",ausp:"平",ci:"亨，濡其尾，无攸利，不续终也。",jie:"事情未成，不能持续至终。小狐狸渡河沾湿尾巴，无所利益。",lq6:["父母爻（未济终济）","父母爻（光明照耀）","官鬼爻（即将成功）","兄弟爻（小有进展）","妻财爻（有实力待发）","兄弟爻（起步艰难）"],syyx:"世四应初。火在水上，阴阳不交。未济之极，即是既济之始。",syy:"火水未济，事情未成，不能持续至终。世爻在四爻（接近核心），应爻在初爻（起步）。一季度此卦提示：黎明前的黑暗。事情尚未完成，看似无望，但未济之极恰是既济之始。最困难的时候往往就是转机即将出现的时候。慎终如始，不轻言放弃。",pros:"创业初期、项目启动、重新出发",cons:"中途放弃、轻率涉险",changes:[29,6,2,35,64,1]}
 ];
 
-// 八卦速查
-const BAGUA = [
-  {id:1,name:"乾",sym:"☰",wx:"金",fw:"西北",xiang:"天",renwu:"父亲/领导"},
-  {id:2,name:"兑",sym:"☱",wx:"金",fw:"西",xiang:"泽",renwu:"少女/口舌"},
-  {id:3,name:"离",sym:"☲",wx:"火",fw:"南",xiang:"火",renwu:"中女/光明"},
-  {id:4,name:"震",sym:"☳",wx:"木",fw:"东",xiang:"雷",renwu:"长男/行动"},
-  {id:5,name:"巽",sym:"☴",wx:"木",fw:"东南",xiang:"风",renwu:"长女/渗透"},
-  {id:6,name:"坎",sym:"☵",wx:"水",fw:"北",xiang:"水",renwu:"中男/险陷"},
-  {id:7,name:"艮",sym:"☶",wx:"土",fw:"东北",xiang:"山",renwu:"少男/停止"},
-  {id:8,name:"坤",sym:"☷",wx:"土",fw:"西南",xiang:"地",renwu:"母亲/包容"}
-];
+const BAGUA=[{id:1,name:"乾",sym:"☰",wx:"金",fw:"西北"},{id:2,name:"兑",sym:"☱",wx:"金",fw:"西"},{id:3,name:"离",sym:"☲",wx:"火",fw:"南"},{id:4,name:"震",sym:"☳",wx:"木",fw:"东"},{id:5,name:"巽",sym:"☴",wx:"木",fw:"东南"},{id:6,name:"坎",sym:"☵",wx:"水",fw:"北"},{id:7,name:"艮",sym:"☶",wx:"土",fw:"东北"},{id:8,name:"坤",sym:"☷",wx:"土",fw:"西南"}];
+const POS_NAMES=["上爻","五爻","四爻","三爻","二爻","初爻"];
+const POS_HINTS=["事情尾声/外在影响","决策层/核心人物","接近目标/关键时刻","众人参与/内部分歧","执行中段/中期成败","事情萌芽/初始基础"];
+const LIUQIN=["父母爻","官鬼爻","妻财爻","兄弟爻","子孙爻","子孙爻"];
 
-// 六亲含义（从上爻到初爻）
-const LIUQIN = ["父母爻","官鬼爻","妻财爻","兄弟爻","子孙爻","子孙爻"];
-const POS_NAMES = ["上爻","五爻","四爻","三爻","二爻","初爻"];
-const POS_HINTS = [
-  "事情尾声/外在影响",
-  "决策层/核心人物",
-  "接近目标/关键时刻",
-  "众人参与/内部分歧",
-  "执行中段/中期成败",
-  "事情萌芽/初始基础"
-];
+// 世应位置表
+const SHI_MAP={1:4,2:1,3:4,4:1,5:4,6:4,7:1,8:4,9:3,10:4,11:3,12:5,13:4,14:4,15:2,16:4,17:1,18:3,19:3,20:3,21:4,22:3,23:5,24:1,25:4,26:3,27:4,28:4,29:1,30:2,31:2,32:2,33:1,34:3,35:3,36:2,37:4,38:3,39:3,40:2,41:3,42:2,43:3,44:4,45:3,46:2,47:2,48:3,49:3,50:4,51:3,52:4,53:3,54:4,55:3,56:3,57:3,58:2,59:3,60:4,61:3,62:3,63:2,64:3};
+const YING_MAP={1:1,2:4,3:5,4:4,5:1,6:1,7:4,8:0,9:5,10:5,11:5,12:2,13:1,14:1,15:5,16:2,17:5,18:0,19:0,20:0,21:5,22:0,23:2,24:5,25:5,26:4,27:5,28:5,29:4,30:5,31:5,32:5,33:4,34:5,35:0,36:5,37:5,38:5,39:2,40:5,41:5,42:5,43:5,44:5,45:0,46:5,47:5,48:4,49:0,50:5,51:0,52:5,53:0,54:2,55:5,56:0,57:0,58:5,59:2,60:5,61:5,62:0,63:5,64:0};
 
-// ═══════════════════════════════════════════════════════
-// 全局状态
-// ═══════════════════════════════════════════════════════
-let state = {
-  currentStep: 1,
-  matter: "",
-  number: 0,
-  upper: 0, lower: 0,
-  mainId: 0, dongYao: 0,
-  changeId: 0,
-  result: null
-};
+let state={currentStep:1,matter:"",number:0,upper:0,lower:0,mainId:0,dongYao:0,changeId:0,result:null};
 
-function getHexagram(id) { return HEXAGRAMS.find(h => h.id === id); }
-function getBagua(id) { return BAGUA.find(b => b.id === id); }
+function getHex(id){return H[id-1]}
+function getBg(id){return BAGUA.find(b=>b.id===id)}
 
-// ═══════════════════════════════════════════════════════
-// 核心算法
-// ═══════════════════════════════════════════════════════
-function calcHexagram(userNum) {
-  const now = new Date();
-  const H = now.getHours();
-  let upper = (userNum + H) % 8; upper = upper || 8;
-  let lower = (userNum * 2 + H) % 8; lower = lower || 8;
-  let mainId = (upper - 1) * 8 + lower;
-  let dongYao = (userNum + H) % 6 + 1;
-
-  // 二进制翻爻（从上爻到初爻 = 高3位到低3位）
-  let binVal = 0;
-  for (let i = 0; i < 6; i++) {
-    let guaIdx = i < 3 ? upper - 1 : lower - 1;
-    let yaoIdx = i < 3 ? 2 - i : 5 - i;
-    let isYang = ((guaIdx >> yaoIdx) & 1) === 1;
-    binVal = (binVal << 1) | (isYang ? 1 : 0);
+function calcHex(userNum){
+  const now=new Date(),H=now.getHours();
+  let upper=(userNum+H)%8;upper=upper||8;
+  let lower=(userNum*2+H)%8;lower=lower||8;
+  let mainId=(upper-1)*8+lower;
+  let dongYao=(userNum+H)%6+1;
+  let binVal=0;
+  for(let i=0;i<6;i++){
+    let guaIdx=i<3?upper-1:lower-1;
+    let yaoIdx=i<3?2-i:5-i;
+    let isYang=((guaIdx>>yaoIdx)&1)===1;
+    binVal=(binVal<<1)|(isYang?1:0);
   }
-  // binVal 高3位=上卦，低3位=下卦（从初爻到上爻排列）
-  // 转为从上爻到初爻的二进制：上爻=bit5, 初爻=bit0
-  // 原始：初爻=bit0(LSB)...上爻=bit5(MSB)
-  // 恒卦：震☳(110)在上卦=bits5-3=110, 巽☴(010)在下卦=bits2-0=010 -> bin=110010=50
-  // 动爻位置：dongYao=3(1-based) -> bit2翻转
-  let flipBit = 1 << (dongYao - 1);
-  let newBin = binVal ^ flipBit;
-  let newUpper = (newBin >> 3) & 0x7; newUpper = newUpper || 8;
-  let newLower = newBin & 0x7; newLower = newLower || 8;
-  let changeId = (newUpper - 1) * 8 + newLower;
-
-  return { upper, lower, mainId, dongYao, changeId };
+  let flipBit=1<<(dongYao-1);
+  let newBin=binVal^flipBit;
+  let newUpper=(newBin>>3)&0x7;newUpper=newUpper||8;
+  let newLower=newBin&0x7;newLower=newLower||8;
+  let changeId=(newUpper-1)*8+newLower;
+  return{upper,lower,mainId,dongYao,changeId};
 }
 
-// ═══════════════════════════════════════════════════════
-// 六爻生成（从上爻到初爻）
-// ═══════════════════════════════════════════════════════
-function genHexagramLines(upperId, lowerId) {
-  const lines = [];
-  for (let i = 0; i < 3; i++) {
-    let yaoIdx = 2 - i; // 2,1,0
-    let isYang = ((upperId - 1) >> yaoIdx & 1) === 1;
-    lines.push(isYang);
-  }
-  for (let i = 0; i < 3; i++) {
-    let yaoIdx = 2 - i;
-    let isYang = ((lowerId - 1) >> yaoIdx & 1) === 1;
-    lines.push(isYang);
-  }
-  return lines; // [上爻, 五爻, 四爻, 三爻, 二爻, 初爻]
+function genLines(uid,lid){
+  const r=[];
+  for(let i=0;i<3;i++){let j=2-i;r.push(((uid-1)>>j&1)===1);}
+  for(let i=0;i<3;i++){let j=2-i;r.push(((lid-1)>>j&1)===1);}
+  return r;
 }
 
-function genChangeLines(upperId, lowerId, dongYao) {
-  const lines = genHexagramLines(upperId, lowerId);
-  lines[dongYao - 1] = !lines[dongYao - 1];
-  return lines;
+function judge(mainId,changeId,dongYao,upper,lower){
+  const now=new Date(),month=now.getMonth()+1;
+  const hex=getHex(mainId),cHex=getHex(changeId);
+  if(!hex)return defResult();
+  let bp=55,pros=[],cons=[];
+  if(hex.ausp==="大吉"){bp=80;pros.push(`主卦「${hex.name}」为${hex.ausp}之象，卦德极为有利`);}
+  else if(hex.ausp==="吉"){bp=68;pros.push(`主卦「${hex.name}」为${hex.ausp}卦，卦德有利`);}
+  else if(hex.ausp==="平"){bp=52;}
+  else if(hex.ausp==="小凶"){bp=35;cons.push(`主卦「${hex.name}」含${hex.ausp}之象`);}
+  else{bp=18;cons.push(`主卦「${hex.name}」为大凶之卦`);}
+  if(cHex){
+    if(cHex.ausp==="大吉"){bp=Math.max(bp,75);pros.push(`变卦「${cHex.name}」暗示最终趋向大吉`);}
+    else if(cHex.ausp==="吉"){bp=Math.min(bp+5,88);pros.push(`变卦「${cHex.name}」暗示事情终归吉利`);}
+    else if(cHex.ausp==="小凶"||cHex.ausp==="大凶"){bp=Math.max(bp-8,15);cons.push(`变卦「${cHex.name}」暗示结果存在风险`);}
+  }
+  const dongLabel=dongYao<=2?"低位（初期/基础）":dongYao===3?"三爻（中位，进展中段）":dongYao===4?"四爻（关键门槛）":"五爻/上爻（核心/尾声，影响重大）";
+  if(dongYao<=2){bp+=5;pros.push(`动爻在${dongLabel}，变数相对可控`);}
+  else if(dongYao>=4){cons.push(`动爻在${dongLabel}，需格外谨慎`);bp-=(dongYao-3)*3;}
+  const isSp=[2,3,4].includes(month),isSu=[5,6,7].includes(month),isAu=[8,9,10].includes(month),isWi=[11,12,1].includes(month);
+  const sn=isSp?"春（木旺）":isSu?"夏（火旺）":isAu?"秋（金旺）":"冬（水旺）";
+  const hasU=upper===7||upper===8||lower===7||lower===8;
+  if(hasU&&(isSu||isAu||[3,6,9,12].includes(month))){bp+=5;pros.push(`土卦在${sn}得地气之助`);}
+  const hasK=(upper===1||upper===2||lower===1||lower===2);
+  if(hasK&&isAu){bp+=6;pros.push(`金卦得秋令`);}else if(hasK&&isSp){bp-=5;cons.push(`金卦在春季休囚`);}
+  const hasM=(upper===4||upper===5||lower===4||lower===5);
+  if(hasM&&isSp){bp+=6;pros.push(`木卦得春令`);}else if(hasM&&isAu){bp-=5;cons.push(`木卦在秋季休囚`);}
+  if((upper===3||lower===3)&&isSu){bp+=6;pros.push(`火卦得夏令`);}
+  if((upper===6||lower===6)&&isWi){bp+=6;pros.push(`水卦得冬令`);}
+  let final=Math.min(93,Math.max(12,bp));
+  let timing="适合行动",tDetail="时机尚可，稳中求进",tBest="",tWarn="";
+  if(final>=75){timing="积极行动";tDetail="时机有利，宜全力以赴";tBest="此时正是行动的最佳窗口，错过可惜";}
+  else if(final>=60){timing="适合行动";tDetail="时机尚可，稳中求进";tBest="3-5天内行动为佳";}
+  else if(final>=45){timing="观望等待";tDetail="时机一般，不宜冒进，先谋后动";tWarn="建议先做好准备工作，等待更好的时机";}
+  else if(final>=28){timing="暂缓行动";tDetail="时机不利，建议延后";tWarn="当前变数较大，贸然行动风险较高";}
+  else{timing="谨慎行事";tDetail="风险较高，三思而后行";tWarn="建议放弃或大幅调整策略";}
+  const badge=final>=78?"大吉":final>=60?"吉":final>=40?"平":final>=25?"小凶":"大凶";
+  return{badge,prob:final,factors:{pros,cons},timing,tDetail,tBest,tWarn};
 }
 
-// 六亲：初爻=子孙爻，二爻=妻财爻，三爻=兄弟爻，四爻=妻财爻，五爻=官鬼爻，上爻=父母爻
-function getLiuQin(idx) { return LIUQIN[idx]; }
+function defResult(){return{badge:"平",prob:55,factors:{pros:[],cons:[]},timing:"观望",tDetail:"",tBest:"",tWarn:""};}
 
-// ═══════════════════════════════════════════════════════
-// 吉凶判断
-// ═══════════════════════════════════════════════════════
-function judgeAuspice(main, change, dongYao, upper, lower) {
-  const now = new Date();
-  const month = now.getMonth() + 1; // 1-12
-  const hour = now.getHours();
-
-  // 世爻应爻（简化：主卦世五应二，特殊情况调整）
-  let shiIdx = 4, yingIdx = 1; // 默认世五应二
-  if (main === 1) { shiIdx = 4; yingIdx = 1; } // 乾世五应二
-  if (main === 2) { shiIdx = 1; yingIdx = 4; } // 坤世二应五
-
-  let baseProb = 55;
-  let factors = { pros: [], cons: [] };
-
-  // 主卦吉凶
-  const hex = getHexagram(main);
-  if (!hex) return { badge: "平", prob: 55, pros: [], cons: [], timing: "暂缓", timingDetail: "" };
-
-  if (["1","11","14","24","42","55"].includes(String(main))) {
-    baseProb = Math.max(baseProb, 78);
-    factors.pros.push("主卦为大吉卦");
-  } else if (["4","5","7","8","10","13","15","17","19","25","26","27","30","31","32","34","35","40","41","43","45","46","48","49","50","53","58","60","61"].includes(String(main))) {
-    baseProb = Math.max(baseProb, 65);
-    factors.pros.push("主卦为吉卦");
-  } else if (["6","28","29","36","39","44","47","54","62"].includes(String(main))) {
-    baseProb = Math.min(baseProb, 38);
-    factors.cons.push("主卦含小凶之象");
-  } else if (["23"].includes(String(main))) {
-    baseProb = Math.min(baseProb, 20);
-    factors.cons.push("主卦为大凶卦");
-  }
-
-  // 动爻位置影响
-  if (dongYao <= 2) { factors.pros.push("动爻在低位，事情尚在初期，变数较小"); }
-  if (dongYao === 3) { factors.pros.push("动爻在中位，事情进展中段，影响中等"); }
-  if (dongYao === 4) { factors.cons.push("动爻在四爻，关键门槛，谨防变故"); }
-  if (dongYao === 5) { factors.cons.push("动爻在五爻，决策核心，影响重大"); }
-  if (dongYao === 6) { factors.cons.push("动爻在上爻，事情已近尾声，变化最难挽回"); }
-
-  // 变卦影响
-  const changeHex = getHexagram(change);
-  if (changeHex) {
-    if (["1","11","14","24","42","55"].includes(String(change))) {
-      factors.pros.push("变卦为大吉卦，事情有转机");
-    } else if (["4","5","7","8","10","13","15","17","19","25","26","27","30","31","32","34","35","40","41","43","45","46","48","49","50","53","58","60","61"].includes(String(change))) {
-      factors.pros.push("变卦为吉卦，局势向好");
-    }
-    if (["6","28","29","36","39","47","54","62"].includes(String(change))) {
-      factors.cons.push("变卦含凶象，需警惕局势恶化");
-    }
-  }
-
-  // 五行时令（简化）
-  let wxProb = 0;
-  const isSpring = month >= 2 && month <= 4;
-  const isSummer = month >= 5 && month <= 7;
-  const isAutumn = month >= 8 && month <= 10;
-  const isWinter = month >= 11 || month <= 1;
-
-  if ([1,2].includes(upper) || [1,2].includes(lower)) { // 金
-    if (isAutumn) { wxProb = 8; factors.pros.push("金卦得秋令，时令相生"); }
-    else { wxProb = -5; factors.cons.push("金卦失令，略显不利"); }
-  }
-  if ([4,5].includes(upper) || [4,5].includes(lower)) { // 木
-    if (isSpring) { wxProb = 8; factors.pros.push("木卦得春令，时令相生"); }
-    else { wxProb = -5; factors.cons.push("木卦失令，略显不利"); }
-  }
-  if ([3].includes(upper) || [3].includes(lower)) { // 火
-    if (isSummer) { wxProb = 8; factors.pros.push("火卦得夏令，时令相生"); }
-    else { wxProb = -5; factors.cons.push("火卦失令，略显不利"); }
-  }
-  if ([6].includes(upper) || [6].includes(lower)) { // 水
-    if (isWinter) { wxProb = 8; factors.pros.push("水卦得冬令，时令相生"); }
-    else { wxProb = -5; factors.cons.push("水卦失令，略显不利"); }
-  }
-  if ([7,8].includes(upper) || [7,8].includes(lower)) { // 土
-    if (isSummer || isAutumn) { wxProb = 6; factors.pros.push("土卦得令，略有助益"); }
-  }
-
-  let finalProb = Math.min(95, Math.max(8, baseProb + wxProb));
-  if (finalProb >= 78) return { badge: "大吉", prob: finalProb, factors, timing: "积极行动", timingDetail: "时机有利，宜全力以赴" };
-  if (finalProb >= 60) return { badge: "吉", prob: finalProb, factors, timing: "适合行动", timingDetail: "时机尚可，稳中求进" };
-  if (finalProb >= 40) return { badge: "平", prob: finalProb, factors, timing: "观望等待", timingDetail: "时机一般，不宜冒进" };
-  if (finalProb >= 25) return { badge: "小凶", prob: finalProb, factors, timing: "暂缓行动", timingDetail: "时机不利，建议延后" };
-  return { badge: "大凶", prob: finalProb, factors, timing: "谨慎行事", timingDetail: "风险较高，三思而后行" };
+function genAdvice(mainId,changeId,dongYao,prob){
+  const hex=getHex(mainId),cHex=getHex(changeId);
+  if(!hex)return[];
+  const r=[];
+  if(hex.pros){r.push({t:"顺势而为",d:`${hex.pros.split("、")[0]}的方向契合卦象本义，宜顺势推进。`,tag:"pros"});}
+  if(dongYao<=3){r.push({t:"稳扎稳打",d:"动爻在三爻以下，事情尚在初期/中期，不必急躁，按部就班推进即可。",tag:"neutral"});}
+  else{r.push({t:"蓄势待发",d:"动爻在四爻以上，事情已至关键阶段，蓄势等待时机成熟再行动。",tag:"neutral"});}
+  if(cHex&&cHex.id!==mainId){r.push({t:"关注变化",d:`主卦向变卦演变：变卦「${cHex.name}」暗示事情将有转变，需留意新趋势。`,tag:"neutral"});}
+  if(["大吉","吉"].includes(hex.ausp)){r.push({t:"积极进取",d:"卦象显示有利，宜积极行动、把握机会，不必过度保守。",tag:"pros"});}
+  else if(["小凶","大凶"].includes(hex.ausp)){r.push({t:"谨慎防范",d:"卦象显示风险，需做好预案，谨慎行事，忌盲目冒进。",tag:"cons"});}
+  else{r.push({t:"中道而行",d:"卦象显示中性，成败更多取决于人的主观努力，尽力而为便好。",tag:"neutral"});}
+  return r;
 }
 
-// ═══════════════════════════════════════════════════════
-// 行动建议生成
-// ═══════════════════════════════════════════════════════
-function genAdvice(main, change, dongYao) {
-  const advices = [];
-  const hex = getHexagram(main);
-  const changeHex = getHexagram(change);
-  if (!hex) return advices;
-
-  advices.push({ title: "顺势而为", text: hex.pros.split("/")[0] + "的方向，契合卦象本义，宜顺势推进。" });
-
-  if (dongYao <= 3) {
-    advices.push({ title: "稳扎稳打", text: "动爻在三爻以下，事情尚在初期/中期，不必急躁，按部就班推进即可。" });
-  } else {
-    advices.push({ title: "蓄势待发", text: "动爻在四爻以上，事情已至关键阶段，蓄势等待时机成熟再行动。" });
-  }
-
-  if (changeHex && changeHex.id !== main) {
-    advices.push({ title: "关注变化", text: `主卦向变卦演变：变卦「${changeHex.name}」暗示事情将有转变，需留意新趋势。` });
-  }
-
-  if (["大吉","吉"].includes(hex.ausp)) {
-    advices.push({ title: "积极进取", text: "卦象显示有利，宜积极行动、把握机会，不必过度保守。" });
-  } else if (["小凶","大凶"].includes(hex.ausp)) {
-    advices.push({ title: "谨慎防范", text: "卦象显示风险，需做好预案，谨慎行事，忌盲目冒进。" });
-  } else {
-    advices.push({ title: "中道而行", text: "卦象显示中性，成败更多取决于人的主观努力，尽力而为便好。" });
-  }
-
-  return advices;
-}
-
-// ═══════════════════════════════════════════════════════
-// 渲染函数
-// ═══════════════════════════════════════════════════════
-function renderHexagram(id, dongIdx) {
-  const h = getHexagram(id);
-  if (!h) return "";
-  const lines = genHexagramLines(h.upper, h.lower);
-  let html = `<div class="hexagram-stack">`;
-  html += `<div class="hexagram-name">${h.name}为${h.gua.length === 4 ? "卦" : ""}</div>`;
-  html += `<div class="hexagram-id">第${h.id}卦</div>`;
-  html += `<div class="hexagram-symbols">`;
-  for (let i = 0; i < 6; i++) {
-    let cls = lines[i] ? "yao-yang" : "yao-yin";
-    if (i === dongIdx - 1) cls += " dong";
-    html += `<div class="yao-line ${cls}"></div>`;
-  }
-  html += `</div>`;
-  html += `<div class="hexagram-meta">${BAGUA[h.upper-1].sym} ${BAGUA[h.upper-1].wx} · ${BAGUA[h.lower-1].sym} ${BAGUA[h.lower-1].wx}</div>`;
-  html += `</div>`;
+function renderHexa(id,dongIdx){
+  const h=getHex(id);if(!h)return"";
+  const lines=genLines(h.upper,h.lower);
+  let html=`<div class="hexagram-stack">`;
+  html+=`<div class="hexagram-name">${h.name}卦</div>`;
+  html+=`<div class="hexagram-id">第${id}卦</div>`;
+  html+=`<div class="hexagram-symbols">`;
+  for(let i=0;i<6;i++){let cls=lines[i]?"yao-yang":"yao-yin";if(i===dongIdx-1)cls+=" dong";html+=`<div class="yao-line ${cls}"></div>`;}
+  html+=`</div>`;
+  const u=getBg(h.upper),l=getBg(h.lower);
+  html+=`<div class="hexagram-meta">${u.sym} ${u.wx} · ${l.sym} ${l.wx}</div></div>`;
   return html;
 }
 
-function renderHexaDisplay(mainId, changeId, dongYao) {
-  const el = document.getElementById("hexaDisplay");
-  el.innerHTML = renderHexagram(mainId, dongYao) +
-    `<div class="arrow-symbol">→</div>` +
-    renderHexagram(changeId, null);
+function renderHexaDisplay(mid,cid,dYao){
+  document.getElementById("hexaDisplay").innerHTML=renderHexa(mid,dYao)+`<div class="arrow-symbol">→</div>`+renderHexa(cid,null);
 }
 
-function renderYaoTable(mainId, dongYao) {
-  const h = getHexagram(mainId);
-  if (!h) return;
-  const lines = genHexagramLines(h.upper, h.lower);
-  const shiIdx = 4, yingIdx = 1;
-
-  let html = "";
-  for (let i = 0; i < 6; i++) {
-    let isYang = lines[i];
-    let isShi = (i === shiIdx);
-    let isYing = (i === yingIdx);
-    let isDong = (i === dongYao - 1);
-    let label = getLiuQin(i);
-    let mark = "";
-    if (isShi) mark = "<span style='color:var(--gold)'>【世】</span>";
-    if (isYing) mark = "<span style='color:#8a8070'>【应】</span>";
-    if (isDong) mark += "<span style='color:var(--red)'> ✦动</span>";
-    html += `<tr>
-      <td class="yao-pos">${POS_NAMES[i]}</td>
-      <td class="yao-type">${isYang ? "━━ 阳" : "━ ━ 阴"}</td>
-      <td>${label}${mark}</td>
-    </tr>`;
-  }
-  document.getElementById("yaoTable").innerHTML = html;
-  document.getElementById("shiyInfo").innerHTML =
-    `<strong style="color:var(--gold)">世爻</strong>在第${shiIdx+1}爻（${getLiuQin(shiIdx)}），代表您（主动方）。<br>
-     <strong style="color:#8a8070">应爻</strong>在第${yingIdx+1}爻（${getLiuQin(yingIdx)}），代表外部环境/对方。<br>
-     <br>${dongYao <= 3 ? "动爻在低位，事情尚在初期/中期，变数相对可控。" :
-      dongYao === 4 ? "动爻在四爻，事情接近关键门槛，须特别注意。" :
-      "动爻在中上位，事情已至核心阶段，影响较大。"}`;
+function renderShiYing(mid,dYao){
+  const hex=getHex(mid);if(!hex)return;
+  const sy=SHI_MAP[mid]??3,yy= Ying_MAP[mid]??5;
+  const lines=genLines(hex.upper,hex.lower);
+  let html=`<span class="shi-yin">世爻</span>在第${sy+1}爻（${LIUQIN[sy]}）<strong style="color:var(--text)">——代表大王（主动方）</strong><br>`;
+  html+=`<span class="ying-yin">应爻</span>在第${(yy===0?5:yy)+1}爻（${yy===0?"父母爻":LIUQIN[yy]}）<strong style="color:var(--text)">——代表外部竞争环境/对方</strong><br><br>`;
+  html+=`<strong style="color:var(--gold)">世应关系：</strong>${hex.syy}`;
+  document.getElementById("shiYingDisplay").innerHTML=html;
+  const tipTitle=hex.syy.split("。")[0]+"。";
+  document.getElementById("hexCoreTip").innerHTML=`<div class="core-tip-title">⦿ 格局核心判断</div>${hex.syy}`;
 }
 
-function renderResult(ausp) {
-  const badge = document.getElementById("auspBadge");
-  badge.textContent = "【" + ausp.badge + "】";
-  badge.className = "ausp-badge " + (
-    ausp.badge === "大吉" ? "ausp-great" :
-    ausp.badge === "吉" ? "ausp-good" :
-    ausp.badge === "平" ? "ausp-neutral" :
-    "ausp-bad"
-  );
-
-  const bar = document.getElementById("probBar");
-  bar.style.width = "0%";
-  setTimeout(() => {
-    bar.style.width = ausp.prob + "%";
-    bar.className = "prob-bar-fill " + (
-      ausp.prob >= 70 ? "great" :
-      ausp.prob >= 55 ? "good" :
-      ausp.prob >= 40 ? "neutral" : "bad"
-    );
-  }, 100);
-  document.getElementById("probText").textContent = "成功率约 " + ausp.prob + "%";
-
-  let prosHtml = "", consHtml = "";
-  (ausp.factors.pros || []).forEach(p => {
-    prosHtml += `<div class="list-item"><span class="list-icon" style="color:var(--green)">✅</span>${p}</div>`;
-  });
-  (ausp.factors.cons || []).forEach(c => {
-    consHtml += `<div class="list-item"><span class="list-icon" style="color:var(--red)">⚠️</span>${c}</div>`;
-  });
-  if (!prosHtml) prosHtml = '<div class="list-item" style="color:var(--text-dim)">暂无明显不利因素</div>';
-  if (!consHtml) consHtml = '<div class="list-item" style="color:var(--text-dim)">暂无明显不利因素</div>';
-  document.getElementById("prosList").innerHTML = prosHtml;
-  document.getElementById("consList").innerHTML = consHtml;
-}
-
-function renderTiming(ausp) {
-  document.getElementById("timingResult").innerHTML =
-    `<span style="color:${ausp.badge==="大吉"||ausp.badge==="吉"?"var(--green)":ausp.badge==="平"?"#b4a078":"var(--red)"}">${ausp.timing}</span>`;
-  document.getElementById("timingDetail").innerHTML = `
-    <div class="result-value">${ausp.timingDetail}</div>
-    <div style="margin-top:8px;font-size:13px;color:var(--text-dim)">
-      ${new Date().getMonth()>=2&&new Date().getMonth()<=4?"🌸 当前春末，木气旺盛，利木卦":"<br>"}
-      建议选择上午（7-11时）行动，此时精力充沛、思维清晰。
+function renderYaoAnalysis(mid,dYao){
+  const hex=getHex(mid);if(!hex)return;
+  const lines=genLines(hex.upper,hex.lower);
+  let html="";
+  for(let i=0;i<6;i++){
+    const isD=i===dYao-1;
+    const yy=lines[i]?"━━ 阳":"━ ━ 阴";
+    html+=`<div class="yao-row">
+      <div class="yao-lbl">${POS_NAMES[i]}</div>
+      <div class="yao-yy">${yy}</div>
+      <div class="yao-meaning">${hex.lq6[i]}${isD?'<span class="dong-tag"> ✦ 动</span>':''}</div>
     </div>`;
+  }
+  document.getElementById("yaoAnalysisList").innerHTML=html;
 }
 
-function renderAdvice(main, change, dongYao) {
-  const advices = genAdvice(main, change, dongYao);
-  let html = "";
-  advices.forEach((a, i) => {
-    html += `<div class="advice-item"><span class="advice-num">${i+1}</span><strong>${a.title}</strong><br>${a.text}</div>`;
+function renderResult(ausp){
+  const badge=document.getElementById("auspBadge");
+  badge.textContent="【"+ausp.badge+"】";
+  badge.className="ausp-badge "+({大吉:"ausp-great",吉:"ausp-good",平:"ausp-neutral",小凶:"ausp-bad",大凶:"ausp-bad"}[ausp.badge]||"ausp-neutral");
+  const bar=document.getElementById("probBar");
+  bar.style.width="0%";
+  setTimeout(()=>{
+    bar.style.width=ausp.prob+"%";
+    bar.className="prob-bar-fill "+({大吉:"great",吉:"good",平:"neutral",小凶:"bad",大凶:"bad"}[ausp.badge]||"neutral");
+  },100);
+  document.getElementById("probText").textContent="成功率约 "+ausp.prob+"%";
+  const pc=document.getElementById("prosConsGrid");
+  let ph='<div class="pros-box"><div class="pros-title">✅ 有利因素</div>';
+  let ch='<div class="cons-box"><div class="cons-title">⚠️ 不利因素</div>';
+  (ausp.factors.pros||[]).forEach(p=>ph+=`<div class="list-item" style="font-size:12px;line-height:1.6">${p}</div>`);
+  (ausp.factors.cons||[]).forEach(c=>ch+=`<div class="list-item" style="font-size:12px;line-height:1.6">${c}</div>`);
+  if(!ausp.factors.pros.length)ph+='<div class="list-item" style="font-size:12px;color:var(--text-dim)">暂无明显不利因素</div>';
+  if(!ausp.factors.cons.length)ch+='<div class="list-item" style="font-size:12px;color:var(--text-dim)">暂无明显不利因素</div>';
+  ph+='</div>';ch+='</div>';
+  pc.innerHTML=ph+ch;
+}
+
+function renderEvolution(mid,cid,dYao){
+  const hex=getHex(mid),cHex=getHex(cid);if(!hex)return;
+  let html=`<div class="evo-item"><span class="pos">当前主卦「${hex.name}」</span>，动爻在<span class="desc">${POS_NAMES[dYao-1]}</span><span class="arrow">→</span><span class="desc">变卦「${cHex?cHex.name:"?"}」</span>${dYao<=3?'<span class="dong-tag">（事物尚在初期/中期）</span>':'<span class="dong-tag">（事物已至关键阶段）</span>'}</div>`;
+  html+=`<div class="evo-item" style="margin-top:6px"><span style="color:var(--text-dim)">变卦暗示：</span><span class="desc">${cHex?cHex.jie.substring(0,40)+"……":"未知"}</span></div>`;
+  html+=`<div class="evo-item"><span style="color:var(--text-dim)">主卦本义：</span><span class="desc">${hex.pros?hex.pros.split("、")[0]+"的方向有利":""}</span></div>`;
+  document.getElementById("evolutionBox").innerHTML=html;
+  const risk=document.getElementById("riskCard");
+  if(["小凶","大凶"].includes(getHex(mid)?.ausp)){
+    risk.style.display="block";
+    document.getElementById("riskBox").textContent=getHex(mid).cons.split("、").map(c=>"· "+c).join("\n");
+  }else{risk.style.display="none";}
+}
+
+function renderTiming(ausp){
+  const tc=document.getElementById("timingCards");
+  let html="";
+  html+=`<div class="timing-item"><div class="timing-title">⦿ 当前时机判断</div><div class="timing-text">${ausp.timing}：${ausp.tDetail}</div></div>`;
+  if(ausp.tBest)html+=`<div class="timing-item"><div class="timing-title">🌟 最佳行动时段</div><div class="timing-text"><span class="best">${ausp.tBest}</span></div></div>`;
+  if(ausp.tWarn)html+=`<div class="timing-item"><div class="timing-title">⚠️ 需要警惕</div><div class="timing-text"><span class="warn">${ausp.tWarn}</span></div></div>`;
+  const now=new Date(),month=now.getMonth()+1;
+  const sn=month>=2&&month<=4?"春末（木气旺盛）":month>=5&&month<=7?"夏季（火气旺盛）":month>=8&&month<=10?"秋季（金气旺盛）":"冬季（水气旺盛）";
+  html+=`<div class="timing-item"><div class="timing-title">📅 时令参考</div><div class="timing-text">当前${sn}，建议选择上午（7-11时）行动，此时精力充沛、思维清晰。</div></div>`;
+  tc.innerHTML=html;
+}
+
+function renderAdvice(mid,cid,dYao,prob){
+  const advices=genAdvice(mid,cid,dYao,prob);
+  let html="";
+  advices.forEach((a,i)=>{
+    const tagClass={pros:"tag-pros",cons:"tag-cons",neutral:"tag-neutral"}[a.tag]||"tag-neutral";
+    const tagTxt={pros:"✅",cons:"⚠️",neutral:"📌"}[a.tag]||"📌";
+    html+=`<div class="advice-item"><span class="advice-num">${i+1}</span><strong>${a.t}</strong><span class="advice-tag ${tagClass}">${tagTxt}</span><br><span style="font-size:12px;color:var(--text-dim);line-height:1.6">${a.d}</span></div>`;
   });
-  document.getElementById("adviceList").innerHTML = html;
+  document.getElementById("adviceList").innerHTML=html;
 }
 
-function renderGuaci(main, change) {
-  const h = getHexagram(main);
-  const c = getHexagram(change);
-  if (!h) return;
-  document.getElementById("mainGuaciOrig").textContent = "「" + h.ci + "」";
-  document.getElementById("mainGuaciMod").textContent = h.jie;
-  if (c) {
-    document.getElementById("changeGuaciOrig").textContent = "「" + c.ci + "」";
-    document.getElementById("changeGuaciMod").textContent = c.jie;
+function renderGuaci(mid,cid){
+  const h=getHex(mid),c=getHex(cid);
+  if(h){document.getElementById("mainGuaciOrig").textContent="「"+h.ci+"」";document.getElementById("mainGuaciMod").textContent=h.jie;}
+  if(c){document.getElementById("changeGuaciOrig").textContent="「"+c.ci+"」";document.getElementById("changeGuaciMod").textContent=c.jie;}
+}
+
+function renderSummary(mid,cid,dYao,matter,prob){
+  const h=getHex(mid),c=getHex(cid);
+  const pl=prob>=70?"成功可期":prob>=50?"有望成功":prob>=35?"需要努力":"风险较大";
+  let text="";
+  if(prob>=70)text=`「${matter}」得${h?h.name:""}之象，${pl}。变卦${c?c.name:""}暗示变化趋势。`;
+  else if(prob>=40)text=`「${matter}」呈${h?h.name:""}之象，${pl}，关键在于自身努力与把握时机。`;
+  else text=`「${matter}」现${h?h.name:""}之象，${pl}，建议谨慎行事，做好风险预案。`;
+  text+=" 尽人事，听天命，尽力而为便无遗憾。";
+  document.getElementById("summaryText").textContent=text;
+}
+
+function updateStepBar(step){
+  for(let i=1;i<=4;i++){
+    const dot=document.getElementById("s"+i),line=document.getElementById("l"+(i-1));
+    if(dot)dot.className="step-dot"+(i<step?" done":"")+(i===step?" active":"");
+    if(line)line.className="step-line"+(i-1<=step-1?" done":"");
   }
 }
 
-function renderSummary(main, change, dongYao, matter, prob) {
-  const h = getHexagram(main);
-  const c = getHexagram(change);
-  const probLabel = prob >= 70 ? "成功可期" : prob >= 50 ? "有望成功" : prob >= 35 ? "需要努力" : "风险较大";
-  let text = "";
-  if (prob >= 70) {
-    text = `「${matter}」得${h ? h.name : ""}之象，${probLabel}，变卦${c ? c.name : ""}暗示变化趋势。`;
-  } else if (prob >= 40) {
-    text = `「${matter}」呈${h ? h.name : ""}之象，${probLabel}，关键在于自身努力与把握时机。`;
-  } else {
-    text = `「${matter}」现${h ? h.name : ""}之象，${probLabel}，建议谨慎行事，做好风险预案。`;
-  }
-  text += " 尽人事，听天命，尽力而为便无遗憾。";
-  document.getElementById("summaryText").textContent = text;
-}
-
-// ═══════════════════════════════════════════════════════
-// 步骤导航
-// ═══════════════════════════════════════════════════════
-function updateStepBar(step) {
-  for (let i = 1; i <= 3; i++) {
-    const dot = document.getElementById("s" + i);
-    const line = document.getElementById("l" + (i - 1));
-    if (dot) {
-      dot.className = "step-dot" +
-        (i < step ? " done" : "") +
-        (i === step ? " active" : "");
-    }
-    if (line && i > 1) {
-      line.className = "step-line" + (i - 1 <= step - 1 ? " done" : "");
-    }
-  }
-}
-
-function showPage(num) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  const pageEl = document.getElementById("page" + num);
-  if (pageEl) pageEl.classList.add("active");
+function showPage(num){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  const el=document.getElementById("page"+num);if(el)el.classList.add("active");
   updateStepBar(num);
-  state.currentStep = num;
-
-  const nav = document.getElementById("bottomNav");
-  nav.style.display = "flex";
-  const prevBtn = document.getElementById("prevBtn");
-  const nextBtn = document.getElementById("nextBtn");
-  const replayBtn = document.getElementById("replayBtn");
-
-  prevBtn.style.display = num > 1 && num < 7 ? "inline-block" : "none";
-  if (num >= 3 && num <= 5) {
-    nextBtn.style.display = "inline-block";
-    replayBtn.style.display = "none";
-  } else if (num === 6) {
-    nextBtn.style.display = "none";
-    replayBtn.style.display = "inline-block";
-    prevBtn.style.display = "none";
-  } else {
-    nextBtn.style.display = "none";
-    replayBtn.style.display = "none";
-  }
+  state.currentStep=num;
+  const nav=document.getElementById("bottomNav");nav.style.display="flex";
+  const pb=document.getElementById("prevBtn"),nb=document.getElementById("nextBtn"),rb=document.getElementById("replayBtn");
+  pb.style.display=num>1&&num<6?"inline-block":"none";
+  if(num>=3&&num<=5){nb.style.display="inline-block";rb.style.display="none";}
+  else if(num===6){nb.style.display="none";rb.style.display="inline-block";pb.style.display="none";}
+  else{nb.style.display="none";rb.style.display="none";}
 }
 
-function nextPage() {
-  const next = state.currentStep + 1;
-  if (next <= 6) showPage(next);
-}
+function nextPage(){const n=state.currentStep+1;if(n<=6)showPage(n);}
+function prevPage(){const p=state.currentStep-1;if(p>=1)showPage(p);}
+function replay(){showPage(1);document.getElementById("numberInput").value="";document.getElementById("matterInput").value="";document.getElementById("bottomNav").style.display="none";}
 
-function prevPage() {
-  const prev = state.currentStep - 1;
-  if (prev >= 1) showPage(prev);
-}
-
-function replay() {
-  showPage(1);
-  document.getElementById("numberInput").value = "";
-  document.getElementById("matterInput").value = "";
-  document.getElementById("bottomNav").style.display = "none";
-}
-
-// ═══════════════════════════════════════════════════════
-// 主流程
-// ═══════════════════════════════════════════════════════
-function startDivination() {
-  const matter = document.getElementById("matterInput").value.trim();
-  const numStr = document.getElementById("numberInput").value.trim();
-  const num = parseInt(numStr);
-
-  if (!numStr || isNaN(num) || num < 1 || num > 99) {
-    alert("请输入 1~99 之间的整数");
-    return;
-  }
-
-  state.matter = matter || "某事";
-  state.number = num;
-
-  // 计算卦象
-  const calc = calcHexagram(num);
-  state.upper = calc.upper;
-  state.lower = calc.lower;
-  state.mainId = calc.mainId;
-  state.dongYao = calc.dongYao;
-  state.changeId = calc.changeId;
-
-  // 判断吉凶
-  state.result = judgeAuspice(state.mainId, state.changeId, state.dongYao, state.upper, state.lower);
-
-  // 保存历史
+function startDivination(){
+  const matter=document.getElementById("matterInput").value.trim();
+  const numStr=document.getElementById("numberInput").value.trim();
+  const num=parseInt(numStr);
+  if(!numStr||isNaN(num)||num<1||num>99){alert("请输入 1~99 之间的整数");return;}
+  state.matter=matter||"某事";
+  state.number=num;
+  const calc=calcHex(num);
+  state.upper=calc.upper;state.lower=calc.lower;state.mainId=calc.mainId;state.dongYao=calc.dongYao;state.changeId=calc.changeId;
+  state.result=judge(state.mainId,state.changeId,state.dongYao,state.upper,state.lower);
   saveToHistory();
-
-  // 渲染第3页（卦象）
-  renderHexaDisplay(state.mainId, state.changeId, state.dongYao);
-  renderYaoTable(state.mainId, state.dongYao);
-
-  // 显示加载动画，然后到结果页
+  renderHexaDisplay(state.mainId,state.changeId,state.dongYao);
+  renderShiYing(state.mainId,state.dongYao);
+  renderYaoAnalysis(state.mainId,state.dongYao);
   showPage(2);
-  setTimeout(() => {
-    showPage(3);
-    setTimeout(() => {
-      renderResult(state.result);
-      showPage(4);
-      setTimeout(() => {
-        renderTiming(state.result);
-        renderAdvice(state.mainId, state.changeId, state.dongYao);
-        showPage(5);
-        setTimeout(() => {
-          renderGuaci(state.mainId, state.changeId);
-          renderSummary(state.mainId, state.changeId, state.dongYao, state.matter, state.result.prob);
-          showPage(6);
-        }, 300);
-      }, 300);
-    }, 300);
-  }, 1200);
+  setTimeout(()=>{showPage(3);setTimeout(()=>{renderResult(state.result);renderEvolution(state.mainId,state.changeId,state.dongYao);showPage(4);setTimeout(()=>{renderTiming(state.result);renderAdvice(state.mainId,state.changeId,state.dongYao,state.result.prob);showPage(5);setTimeout(()=>{renderGuaci(state.mainId,state.changeId);renderSummary(state.mainId,state.changeId,state.dongYao,state.matter,state.result.prob);showPage(6);},300);},300);},300);},1200);
 }
 
-// ═══════════════════════════════════════════════════════
-// 历史记录
-// ═══════════════════════════════════════════════════════
-function getHistory() {
-  try { return JSON.parse(localStorage.getItem("iching_history") || "[]"); }
-  catch { return []; }
+function getHistory(){try{return JSON.parse(localStorage.getItem("iching_h")||"[]")}catch{return[]};}
+function saveToHistory(){
+  const h=getHex(state.mainId),c=getHex(state.changeId);
+  const rec={id:Date.now(),matter:state.matter,num:state.number,main:state.mainId,mainName:h?h.name:"?",change:state.changeId,changeName:c?c.name:"?",dongYao:state.dongYao,badge:state.result.badge,prob:state.result.prob,time:new Date().toLocaleString("zh-CN")};
+  let hist=getHistory();hist.unshift(rec);hist=hist.slice(0,20);localStorage.setItem("iching_h",JSON.stringify(hist));
 }
-
-function saveToHistory() {
-  const h = getHexagram(state.mainId);
-  const c = getHexagram(state.changeId);
-  const record = {
-    id: Date.now(),
-    matter: state.matter,
-    num: state.number,
-    main: state.mainId,
-    mainName: h ? h.name : "?",
-    change: state.changeId,
-    changeName: c ? c.name : "?",
-    dongYao: state.dongYao,
-    badge: state.result.badge,
-    prob: state.result.prob,
-    time: new Date().toLocaleString("zh-CN")
-  };
-  let hist = getHistory();
-  hist.unshift(record);
-  hist = hist.slice(0, 20);
-  localStorage.setItem("iching_history", JSON.stringify(hist));
-}
-
-function showHistory() {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+function showHistory(){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.getElementById("pageHistory").classList.add("active");
-  document.getElementById("bottomNav").style.display = "flex";
-  document.getElementById("prevBtn").style.display = "none";
-  document.getElementById("nextBtn").style.display = "none";
-  document.getElementById("replayBtn").style.display = "none";
-
-  const hist = getHistory();
-  if (hist.length === 0) {
-    document.getElementById("historyList").innerHTML =
-      '<div style="text-align:center;color:var(--text-dim);padding:20px;font-size:14px;">暂无历史记录</div>';
-    return;
-  }
-  let html = "";
-  hist.forEach(r => {
-    const badgeColor = r.badge==="大吉"||r.badge==="吉"?"var(--green)":r.badge==="平"?"#b4a078":"var(--red)";
-    html += `<div class="history-item" onclick="loadHistory(${r.id})">
-      <div class="history-title">${r.matter}</div>
-      <div class="history-meta">${r.time} · 报数 ${r.num}</div>
-      <div class="history-hexas">${r.mainName} → ${r.changeName} · <span style="color:${badgeColor}">${r.badge}</span> ${r.prob}%</div>
-    </div>`;
-  });
-  document.getElementById("historyList").innerHTML = html;
+  document.getElementById("bottomNav").style.display="flex";
+  document.getElementById("prevBtn").style.display="none";
+  document.getElementById("nextBtn").style.display="none";
+  document.getElementById("replayBtn").style.display="none";
+  const hist=getHistory();
+  if(hist.length===0){document.getElementById("historyList").innerHTML='<div style="text-align:center;color:var(--text-dim);padding:20px;font-size:14px">暂无历史记录</div>';return;}
+  let html="";
+  hist.forEach(r=>{const bc=r.badge==="大吉"||r.badge==="吉"?"var(--green)":r.badge==="平"?"#b4a078":"var(--red)";html+=`<div class="history-item" onclick="loadHistory(${r.id})"><div class="history-title">${r.matter}</div><div class="history-meta">${r.time} · 报数 ${r.num}</div><div class="history-hexas">${r.mainName} → ${r.changeName} · <span style="color:${bc}">${r.badge}</span> ${r.prob}%</div></div>`;});
+  document.getElementById("historyList").innerHTML=html;
 }
-
-function loadHistory(id) {
-  const hist = getHistory();
-  const r = hist.find(h => h.id === id);
-  if (!r) return;
-
-  state.matter = r.matter;
-  state.number = r.num;
-  state.mainId = r.main;
-  state.changeId = r.change;
-  state.dongYao = r.dongYao;
-  state.result = judgeAuspice(r.main, r.change, r.dongYao,
-    getHexagram(r.main).upper, getHexagram(r.main).lower);
-
-  renderHexaDisplay(state.mainId, state.changeId, state.dongYao);
-  renderYaoTable(state.mainId, state.dongYao);
-  renderResult(state.result);
-  renderTiming(state.result);
-  renderAdvice(state.mainId, state.changeId, state.dongYao);
-  renderGuaci(state.mainId, state.changeId);
-  renderSummary(state.mainId, state.changeId, state.dongYao, state.matter, state.result.prob);
-
+function loadHistory(id){
+  const hist=getHistory(),r=hist.find(h=>h.id===id);if(!r)return;
+  state.matter=r.matter;state.number=r.num;state.mainId=r.main;state.changeId=r.change;state.dongYao=r.dongYao;
+  state.result=judge(r.main,r.change,r.dongYao,getHex(r.main)?.upper||1,getHex(r.main)?.lower||1);
+  renderHexaDisplay(state.mainId,state.changeId,state.dongYao);
+  renderShiYing(state.mainId,state.dongYao);
+  renderYaoAnalysis(state.mainId,state.dongYao);
+  renderResult(state.result);renderEvolution(state.mainId,state.changeId,state.dongYao);
+  renderTiming(state.result);renderAdvice(state.mainId,state.changeId,state.dongYao,state.result.prob);
+  renderGuaci(state.mainId,state.changeId);renderSummary(state.mainId,state.changeId,state.dongYao,state.matter,state.result.prob);
   showPage(6);
 }
-
-function clearHistory() {
-  if (confirm("确定清空所有历史记录？")) {
-    localStorage.removeItem("iching_history");
-    showHistory();
-  }
-}
-
-// 初始化
-document.getElementById("bottomNav").style.display = "none";
+function clearHistory(){if(confirm("确定清空所有历史记录？")){localStorage.removeItem("iching_h");showHistory();}}
+document.getElementById("bottomNav").style.display="none";
 </script>
 </body>
 </html>
